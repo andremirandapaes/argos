@@ -1,5 +1,5 @@
 // Vitrine de desenvolvimento do painel HeadCount com a base migrada do artefato (sem banco).
-// Abrir em http://localhost:5173/dev/teste-headcount.html   (?tema=escuro · ?aba=Comercial|Logística|Backoffice · ?sobre=1 · ?filtros=1 · ?centros=1 · ?filial=RR · ?agrupar=Distribuidora · ?rotulos=1 · ?macro=Promotores · ?fora=<cargo> · ?terc=1)
+// Abrir em http://localhost:5173/dev/teste-headcount.html   (?tema=escuro · ?aba=Comercial|Logística|Backoffice · ?sobre=1 · ?filtros=1 · ?centros=1 · ?filial=RR · ?agrupar=Distribuidora · ?rotulos=1 · ?macro=Promotores · ?fora=<cargo> · ?terc=1 · ?busca=promotor)
 // A consolidação abaixo repete a regra da view vw_headcount_linhas (sem terceirizados lançados).
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
@@ -72,5 +72,14 @@ setTimeout(() => {
   // ?voltar=1: clica de novo no mesmo cargo (deve voltar a contar)
   if (tirar && params.get('voltar')) setTimeout(() => [...document.querySelectorAll('button.hc-nome-cargo')].find((b) => b.textContent === tirar)?.click(), 2800)
   if (params.get('terc')) setTimeout(() => [...document.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Terceirizados')?.click(), 900)
+  // ?busca=promotor: digita na busca de cargo do Comparativo YoY
+  const busca = params.get('busca')
+  if (busca)
+    setTimeout(() => {
+      const i = document.querySelector<HTMLInputElement>('input[aria-label="Buscar cargo"]')
+      if (!i) return
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(i, busca)
+      i.dispatchEvent(new Event('input', { bubbles: true }))
+    }, 1200)
   if (params.get('sobre')) document.querySelector<HTMLButtonElement>('[data-slot=collapsible-trigger]')?.click()
 }, 600)

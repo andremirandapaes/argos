@@ -342,3 +342,17 @@ h1 {
   font-size: 1.625rem;
   line-height: 1.2;
 }
+
+/* HeadCount, cargos mês a mês (YoY): separador entre meses e mês de referência destacado */
+.ag-header-cell.ag-inicio-bloco,
+.ag-header-group-cell.ag-inicio-bloco {
+  border-left: 2px solid color-mix(in oklch, var(--foreground) 22%, transparent);
+}
+.ag-header-cell.hc-mes-ref,
+.ag-header-group-cell.hc-mes-ref {
+  background-color: color-mix(in oklch, var(--primary) 14%, var(--muted));
+  color: var(--primary);
+}
+.ag-cell.hc-mes-ref {
+  background-color: color-mix(in oklch, var(--primary) 6%, transparent);
+}

@@ -25,6 +25,7 @@ import {
 } from './regras'
 import { BotoesVinculo, CampoFiltro, Escolha, EscolhaMulti, FiltroMulti, fmtPct1, fmtPessoas, fmtVariacao, type Opcao } from './componentes'
 import { GraficoLinhas } from './GraficoLinhas'
+import { TabelaCargosYoY } from './TabelaCargosYoY'
 
 const COR_AREA: Record<Area, string> = { Comercial: 'var(--hc-comercial)', Logística: 'var(--hc-logistica)', Backoffice: 'var(--hc-backoffice)' }
 
@@ -549,6 +550,8 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
           )}
         </CardContent>
       </Card>
+
+      <TabelaCargosYoY filtradas={filtradas} escopo={escopo} vinculo={vinculo} mes={mes} ultimo={ultimoGeral} comps={comps} semCentro={semCentro} />
 
       {mes && [anoAnterior(mes), mes].some((c) => foraDoFiltro.has(c)) && (
         <p className="flex items-start gap-1.5 text-xs text-alerta-foreground">
