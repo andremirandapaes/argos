@@ -131,14 +131,30 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     () => (centrosValidos.length ? escopo.filter((l) => centrosValidos.includes(chaveCentro(l) ?? '')) : escopo),
     [escopo, centrosValidos],
   )
-  // meses em que alguma linha das áreas filtradas não traz o centro de custo (ex.: Logística de planilha, sem setor)
-  const semCentro = useMemo(() => {
-    const r = new Set<string>()
-    if (!centrosValidos.length) return r
+  // Com filtro de centro de custo:
+  // semCentro = meses em que uma área+filial do filtro não traz centro nenhum (ex.: Logística 2025, planilha só por cargo);
+  // foraDoFiltro = meses com algumas pessoas sem centro (ex.: terceirizados de planilha, sem setor), que ficam de fora.
+  const { semCentro, foraDoFiltro } = useMemo(() => {
+    const semCentro = new Set<string>()
+    const foraDoFiltro = new Map<string, number>()
+    if (!centrosValidos.length) return { semCentro, foraDoFiltro }
     const areasDoFiltro = new Set(centrosValidos.map((c) => areaDaChave[c[0]]))
-    for (const l of escopo) if (areasDoFiltro.has(l[2]) && !chaveCentro(l)) r.add(l[0])
-    return r
-  }, [escopo, centrosValidos])
+    const segmentos = new Map<string, { com: number; sem: number }>()
+    for (const l of escopo) {
+      if (!areasDoFiltro.has(l[2]) || !atendeVinculo(l, vinculo)) continue
+      const k = `${l[0]}|${l[2]}|${l[1]}`
+      const s = segmentos.get(k) ?? { com: 0, sem: 0 }
+      if (chaveCentro(l)) s.com += l[8]
+      else s.sem += l[8]
+      segmentos.set(k, s)
+    }
+    for (const [k, s] of segmentos) if (s.sem && !s.com) semCentro.add(k.slice(0, 7))
+    for (const [k, s] of segmentos) {
+      const m = k.slice(0, 7)
+      if (s.sem && s.com && !semCentro.has(m)) foraDoFiltro.set(m, (foraDoFiltro.get(m) ?? 0) + s.sem)
+    }
+    return { semCentro, foraDoFiltro }
+  }, [escopo, centrosValidos, vinculo])
 
   const total = useMemo(
     () => (mes ? comparar(filtradas, vinculo, mes, ultimoGeral, escopo, semCentro) : null),
@@ -534,6 +550,17 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
         </CardContent>
       </Card>
 
+      {mes && [anoAnterior(mes), mes].some((c) => foraDoFiltro.has(c)) && (
+        <p className="flex items-start gap-1.5 text-xs text-alerta-foreground">
+          <Info className="mt-px size-3.5 shrink-0" />
+          Pessoas sem centro de custo na base (ex.: terceirizados lançados só por área) não entram no filtro:{' '}
+          {[anoAnterior(mes), mes]
+            .filter((c) => foraDoFiltro.has(c))
+            .map((c) => `${rotuloMes(c)}: ${fmtPessoas(foraDoFiltro.get(c)!)}`)
+            .join(' · ')}
+          .
+        </p>
+      )}
       <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
         <Info className="mt-px size-3.5 shrink-0" />
         Os dois anos seguem as regras do painel. Meses de 2025 sem exportação do sistema vêm das planilhas manuais; diferenças de critério entre as
