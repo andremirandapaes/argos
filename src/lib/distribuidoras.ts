@@ -1,4 +1,4 @@
-// Diretriz interna do Grupo Medeiros: ordem e cor de cada distribuidora.
+// Diretriz interna do Grupo Norte Distribuição: ordem e cor de cada distribuidora.
 // Vale para todo o ARGOS (filtros, legendas, gráficos e tabelas): a cor segue a distribuidora,
 // nunca a posição. Os tons (claro/escuro) estão em index.css (--dist-*) e foram validados
 // para daltonismo com o dataviz validate_palette nesta ordem.

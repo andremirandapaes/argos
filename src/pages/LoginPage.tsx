@@ -51,7 +51,7 @@ export function LoginPage() {
             Bases do Winthor versionadas, histórico imutável e os números de sempre calculados no mesmo lugar.
           </p>
         </div>
-        <p className="text-xs opacity-40">NIC · Grupo Medeiros</p>
+        <p className="text-xs opacity-40">NIC · Grupo Norte Distribuição</p>
         {/* símbolo da marca como marca-d'água */}
         <img
           src={simbolo}

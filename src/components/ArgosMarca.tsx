@@ -9,7 +9,7 @@ export function ArgosMarca({ className, compacta = false }: { className?: string
       {!compacta && (
         <div className="flex flex-col leading-none">
           <span className="font-marca text-[23px] leading-none">Argos</span>
-          <span className="mt-1 text-[10px] tracking-wide opacity-60">Grupo Medeiros · NIC</span>
+          <span className="mt-1 text-[10px] whitespace-nowrap opacity-60">Grupo Norte Distribuição · NIC</span>
         </div>
       )}
     </div>

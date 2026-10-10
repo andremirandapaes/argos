@@ -266,7 +266,7 @@ export function AppSidebar() {
                 </div>
                 <div className="grid flex-1 text-left leading-tight">
                   <span className="truncate text-sm font-medium">{exibicao}</span>
-                  <span className="truncate text-xs text-sidebar-foreground/60">{email}</span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">{papel ? ROTULO_PAPEL[papel] : email}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4 opacity-60" />
               </DropdownMenuTrigger>
