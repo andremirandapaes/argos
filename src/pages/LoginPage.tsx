@@ -39,10 +39,10 @@ export function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-[1.1fr_1fr]">
       {/* painel da marca */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-sidebar p-10 text-sidebar-foreground lg:flex">
+      <aside className="relative hidden flex-col justify-between overflow-hidden bg-marca-noite p-10 text-marca-creme lg:flex">
         <ArgosMarca />
         <div className="relative z-10 max-w-md">
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-sidebar-foreground">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-marca-creme">
             Relatórios gerenciais,
             <br />
             sem planilha.

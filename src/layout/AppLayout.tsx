@@ -26,8 +26,9 @@ export function AppLayout() {
       <AppSidebar />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mx-1 h-4 self-center" />
+          {/* no desktop o menu recolhe pelo botão da própria sidebar; o gatilho fica só no celular */}
+          <SidebarTrigger className="-ml-1 md:hidden" />
+          <Separator orientation="vertical" className="mx-1 h-4 self-center md:hidden" />
           {atual && (
             <div className="flex min-w-0 items-baseline gap-2 text-sm">
               <span className="truncate text-muted-foreground">{atual.modulo.titulo}</span>

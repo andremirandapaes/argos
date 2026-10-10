@@ -1,6 +1,6 @@
 // Vitrine da identidade visual: app completo (sidebar, cabeçalho e uma tela) e a tela de login, sem banco.
 // Abrir em http://localhost:5173/dev/teste-marca.html
-//   ?tela=login  · ?rota=/headcount/painel (padrão) · ?tema=escuro · ?menu=fechado
+//   ?tela=login  · ?rota=/headcount/painel (padrão) · ?tema=escuro · ?menu=fechado · ?busca=1 · ?recolher=1
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -40,6 +40,9 @@ qc.setQueryData(['headcount', 'terceirizados-meses'], [])
 
 const login = params.get('tela') === 'login'
 const sessao = login ? null : ({ user: { id: 'u1', email: 'nic@grupomedeiros.com.br', user_metadata: { nome: 'Nic' } } } as unknown as Session)
+
+if (params.get('busca')) setTimeout(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })), 1200)
+if (params.get('recolher')) setTimeout(() => document.querySelector<HTMLButtonElement>('button[aria-label="Recolher menu"]')?.click(), 1000)
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={qc}>

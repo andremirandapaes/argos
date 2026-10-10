@@ -167,14 +167,15 @@
     --sombra-card: 0 1px 2px rgb(18 22 28 / 0.05), 0 4px 14px -4px rgb(18 22 28 / 0.1);
     --sombra-card-hover: 0 2px 4px rgb(18 22 28 / 0.06), 0 10px 24px -6px rgb(18 22 28 / 0.16);
     --sombra-destaque: 0 4px 14px -4px rgb(18 22 28 / 0.25);
-    --sidebar: #12161c;
-    --sidebar-foreground: #f4f1ea;
-    --sidebar-primary: #3fb8af; /* turquesa sobre noite: 7,5:1 */
-    --sidebar-primary-foreground: #12161c;
-    --sidebar-accent: #1c232c;
-    --sidebar-accent-foreground: #f4f1ea;
-    --sidebar-border: #232a33;
-    --sidebar-ring: #3fb8af;
+    /* sidebar flutuante clara: card branco, pílula creme no item ativo, ícone ativo em petróleo */
+    --sidebar: #ffffff;
+    --sidebar-foreground: #12161c;
+    --sidebar-primary: #1f6f6b;
+    --sidebar-primary-foreground: #f4f1ea;
+    --sidebar-accent: #f4f1ea;
+    --sidebar-accent-foreground: #12161c;
+    --sidebar-border: #e7e2d6;
+    --sidebar-ring: #1f6f6b;
 }
 
 /* ARGOS — tema escuro: fundo noite da marca, superfícies em grafite azulado, turquesa como cor de ação. */
@@ -241,13 +242,13 @@
     --sombra-card: 0 0 0 transparent; /* no escuro a borda separa; sem sombra */
     --sombra-card-hover: 0 8px 24px -8px rgb(0 0 0 / 0.5);
     --sombra-destaque: 0 4px 14px -4px rgb(0 0 0 / 0.5);
-    --sidebar: #0d1015;
+    --sidebar: #1a1f27;
     --sidebar-foreground: #f4f1ea;
     --sidebar-primary: #3fb8af;
     --sidebar-primary-foreground: #12161c;
-    --sidebar-accent: #1a2028;
+    --sidebar-accent: #232a33;
     --sidebar-accent-foreground: #f4f1ea;
-    --sidebar-border: rgb(244 241 234 / 0.08);
+    --sidebar-border: rgb(244 241 234 / 0.1);
     --sidebar-ring: #3fb8af;
 }
 

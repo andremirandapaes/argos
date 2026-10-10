@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { ChevronRight, ChevronsUpDown, KeyRound, LogOut } from 'lucide-react'
+import { ChevronDown, ChevronsUpDown, KeyRound, LogOut, PanelLeftClose, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useSessao } from '@/auth/sessao-context'
@@ -10,6 +10,7 @@ import type { Papel } from '@/types/database'
 import { ROTULO_PAPEL } from '@/features/admin/papeis'
 import { FormTrocarSenha } from '@/auth/FormTrocarSenha'
 import { ArgosMarca } from '@/components/ArgosMarca'
+import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -27,7 +28,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -36,10 +36,15 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { BuscaTelas } from './BuscaTelas'
 
-const ROTULO_GRUPO = 'text-[11px] font-semibold tracking-wider uppercase'
+// item ativo: pílula creme, texto forte e ícone em petróleo
+const ITEM_ATIVO = 'data-active:font-medium data-active:[&>svg]:text-sidebar-primary'
+const ICONE_SUAVE = '[&>svg]:text-sidebar-foreground/65'
 
 function iniciais(texto: string) {
   return texto
@@ -58,7 +63,7 @@ function telasVisiveis(modulo: Modulo, papel: Papel | null) {
   return modulo.telas.filter((t) => papelAtende(papel, t.papelMinimo))
 }
 
-/** Um módulo: item recolhível com as telas dentro. Recolhida a sidebar, vira link para a tela inicial. */
+/** Um módulo: grupo recolhível com as telas dentro (linha de árvore). Recolhida a sidebar, vira ícone com dica. */
 function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) {
   const { pathname } = useLocation()
   const { state, isMobile } = useSidebar()
@@ -66,33 +71,24 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
   const moduloAtivo = rotaAtiva(pathname, `/${modulo.id}`)
   const [aberto, setAberto] = useState(moduloAtivo)
 
-  // ao navegar para dentro do módulo (por link ou URL), abre o item
+  // ao navegar para dentro do módulo (por link ou URL), abre o grupo
   const [estavaAtivo, setEstavaAtivo] = useState(moduloAtivo)
   if (moduloAtivo !== estavaAtivo) {
     setEstavaAtivo(moduloAtivo)
     if (moduloAtivo) setAberto(true)
   }
 
-  const cabecalho = (
-    <>
-      <modulo.icone />
-      <div className="grid flex-1 text-left leading-tight">
-        <span className="truncate font-medium">{modulo.titulo}</span>
-        {modulo.subtitulo && <span className="truncate text-xs opacity-60">{modulo.subtitulo}</span>}
-      </div>
-    </>
-  )
-
   if (state === 'collapsed' && !isMobile) {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
-          size="lg"
           render={<NavLink to={`/${modulo.id}/${modulo.telaInicial}`} />}
           isActive={moduloAtivo}
           tooltip={modulo.titulo}
+          className={ITEM_ATIVO}
         >
-          {cabecalho}
+          <modulo.icone />
+          <span>{modulo.titulo}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     )
@@ -100,12 +96,13 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
 
   return (
     <Collapsible open={aberto} onOpenChange={setAberto} render={<SidebarMenuItem />}>
-      <CollapsibleTrigger render={<SidebarMenuButton size="lg" />}>
-        {cabecalho}
-        <ChevronRight className="ml-auto opacity-60 transition-transform duration-200 in-data-panel-open:rotate-90" />
+      <CollapsibleTrigger render={<SidebarMenuButton className={ICONE_SUAVE} title={modulo.subtitulo} />}>
+        <modulo.icone />
+        <span className="flex-1 truncate">{modulo.titulo}</span>
+        <ChevronDown className="ml-auto -rotate-90 opacity-60 transition-transform duration-200 in-data-panel-open:rotate-0" />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <SidebarMenuSub className="mt-0.5">
+        <SidebarMenuSub className="mt-0.5 mr-0 gap-0.5 pr-0">
           {telas.map((tela) => {
             const rota = rotaDaTela(modulo, tela)
             return (
@@ -113,7 +110,7 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
                 <SidebarMenuSubButton
                   render={<NavLink to={rota} />}
                   isActive={rotaAtiva(pathname, rota)}
-                  className="h-8 data-active:font-medium data-active:text-sidebar-accent-foreground [&>svg]:text-sidebar-foreground/60 data-active:[&>svg]:text-sidebar-primary"
+                  className={`h-8 ${ICONE_SUAVE} ${ITEM_ATIVO}`}
                 >
                   <tela.icone />
                   <span>{tela.titulo}</span>
@@ -127,88 +124,142 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
   )
 }
 
-/** Telas do sistema (ex.: Administração): lista simples, sem recolher. */
-function GrupoSistema({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) {
+/** Telas do sistema (ex.: Usuários): itens simples no pé do menu, como "Configurações". */
+function ItensSistema({ papel }: { papel: Papel | null }) {
   const { pathname } = useLocation()
-  const telas = telasVisiveis(modulo, papel)
-  if (telas.length === 0) return null
-
+  const itens = MODULOS.filter((m) => m.area === 'sistema').flatMap((m) =>
+    telasVisiveis(m, papel).map((tela) => ({ rota: rotaDaTela(m, tela), tela })),
+  )
+  if (!itens.length) return null
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className={ROTULO_GRUPO}>{modulo.titulo}</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {telas.map((tela) => {
-            const rota = rotaDaTela(modulo, tela)
-            return (
-              <SidebarMenuItem key={rota}>
-                <SidebarMenuButton
-                  render={<NavLink to={rota} />}
-                  isActive={rotaAtiva(pathname, rota)}
-                  tooltip={tela.titulo}
-                  className="data-active:text-sidebar-accent-foreground data-active:[&_svg]:text-sidebar-primary"
-                >
-                  <tela.icone />
-                  <span>{tela.titulo}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )
-          })}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <SidebarMenu>
+      {itens.map(({ rota, tela }) => (
+        <SidebarMenuItem key={rota}>
+          <SidebarMenuButton
+            render={<NavLink to={rota} />}
+            isActive={rotaAtiva(pathname, rota)}
+            tooltip={tela.titulo}
+            className={`${ICONE_SUAVE} ${ITEM_ATIVO}`}
+          >
+            <tela.icone />
+            <span>{tela.titulo}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
   )
 }
 
 export function AppSidebar() {
   const { sessao } = useSessao()
   const { papel, nome } = usePerfil()
+  const { state, isMobile, toggleSidebar } = useSidebar()
+  const recolhida = state === 'collapsed' && !isMobile
   const email = sessao?.user.email ?? ''
   const exibicao = nome || email
   const [trocandoSenha, setTrocandoSenha] = useState(false)
+  const [buscando, setBuscando] = useState(false)
+
+  // Ctrl+K (ou ⌘K) abre a busca de telas de qualquer lugar
+  useEffect(() => {
+    const atalho = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setBuscando(true)
+      }
+    }
+    window.addEventListener('keydown', atalho)
+    return () => window.removeEventListener('keydown', atalho)
+  }, [])
 
   const modulos = MODULOS.filter((m) => m.area === 'modulo' && telasVisiveis(m, papel).length > 0)
-  const sistema = MODULOS.filter((m) => m.area === 'sistema')
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="px-3 py-4 group-data-[collapsible=icon]:px-2">
-        <ArgosMarca className="group-data-[collapsible=icon]:[&>div:last-child]:hidden" />
+    <Sidebar variant="floating" collapsible="icon">
+      <SidebarHeader className="gap-3 p-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-1.5">
+        {recolhida ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button type="button" onClick={toggleSidebar} aria-label="Expandir menu" className="rounded-md p-0.5 hover:bg-sidebar-accent" />
+              }
+            >
+              <ArgosMarca compacta className="[&>img]:size-8" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Expandir menu</TooltipContent>
+          </Tooltip>
+        ) : (
+          <div className="flex items-center justify-between gap-2">
+            <ArgosMarca />
+            <Button variant="ghost" size="icon" className="size-8 text-sidebar-foreground/65" onClick={toggleSidebar} aria-label="Recolher menu">
+              <PanelLeftClose />
+            </Button>
+          </div>
+        )}
+
+        {/* busca de telas */}
+        {recolhida ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={() => setBuscando(true)}
+                  aria-label="Buscar tela"
+                  className="flex size-8 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/65 hover:bg-sidebar-accent"
+                />
+              }
+            >
+              <Search className="size-4" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Buscar tela (Ctrl+K)</TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setBuscando(true)}
+            className="flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border px-2.5 text-sm text-sidebar-foreground/60 transition-colors hover:border-sidebar-ring/40 hover:text-sidebar-foreground"
+          >
+            <Search className="size-4" />
+            <span className="flex-1 text-left">Buscar</span>
+            <kbd className="rounded border border-sidebar-border px-1.5 py-px font-sans text-[11px] text-sidebar-foreground/60">Ctrl K</kbd>
+          </button>
+        )}
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className={ROTULO_GRUPO}>Módulos</SidebarGroupLabel>
+        <SidebarGroup className="pt-1">
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
+            <SidebarMenu className="gap-0.5">
               {modulos.map((modulo) => (
                 <ItemModulo key={modulo.id} modulo={modulo} papel={papel} />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* bloco do sistema fica no pé do menu */}
-        <div className="mt-auto">
-          {sistema.map((modulo) => (
-            <GrupoSistema key={modulo.id} modulo={modulo} papel={papel} />
-          ))}
-        </div>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="gap-2 p-3 group-data-[collapsible=icon]:px-1.5">
+        <ItensSistema papel={papel} />
+        <SidebarSeparator className="mx-0" />
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<SidebarMenuButton size="lg" className="data-popup-open:bg-sidebar-accent" />}
+                render={
+                  <SidebarMenuButton
+                    size="lg"
+                    tooltip={exibicao}
+                    className="rounded-lg border border-sidebar-border px-2 data-popup-open:bg-sidebar-accent group-data-[collapsible=icon]:border-0"
+                  />
+                }
               >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-xs font-semibold">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary/12 text-xs font-semibold text-sidebar-primary">
                   {iniciais(exibicao) || '?'}
                 </div>
                 <div className="grid flex-1 text-left leading-tight">
                   <span className="truncate text-sm font-medium">{exibicao}</span>
-                  <span className="truncate text-xs opacity-60">{papel ? ROTULO_PAPEL[papel] : ''}</span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">{email}</span>
                 </div>
                 <ChevronsUpDown className="ml-auto size-4 opacity-60" />
               </DropdownMenuTrigger>
@@ -216,7 +267,10 @@ export function AppSidebar() {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="font-normal">
                     <div className="text-sm font-medium text-foreground">{exibicao}</div>
-                    <div className="text-xs text-muted-foreground">{email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {email}
+                      {papel ? ` · ${ROTULO_PAPEL[papel]}` : ''}
+                    </div>
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -234,6 +288,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+
+      <BuscaTelas aberto={buscando} onFechar={() => setBuscando(false)} papel={papel} />
 
       <Dialog open={trocandoSenha} onOpenChange={setTrocandoSenha}>
         <DialogContent className="sm:max-w-sm">
