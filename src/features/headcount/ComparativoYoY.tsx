@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Info, Minus } from 'lucide-react'
-import { compararDistribuidoras, corDistribuidora } from '@/lib/distribuidoras'
+import { compararDistribuidoras, corDistribuidora, ordemDistribuidora } from '@/lib/distribuidoras'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,7 @@ import {
   type FiltroVinculo,
   type Linha,
 } from './regras'
-import { BotoesVinculo, CampoFiltro, Escolha, EscolhaMulti, fmtPct1, fmtPessoas, fmtVariacao } from './componentes'
+import { BotoesVinculo, CampoFiltro, Escolha, EscolhaMulti, FiltroMulti, fmtPct1, fmtPessoas, fmtVariacao, type Opcao } from './componentes'
 import { GraficoLinhas } from './GraficoLinhas'
 
 const COR_AREA: Record<Area, string> = { Comercial: 'var(--hc-comercial)', Logística: 'var(--hc-logistica)', Backoffice: 'var(--hc-backoffice)' }
@@ -42,10 +42,30 @@ const AGRUPAR: { value: Agrupar; label: string }[] = [
 type Comparacao = { antes: number | null; agora: number | null; faltas: string[] }
 type ItemRanking = { nome: string; cor?: string; antes: number; agora: number; dif: number; novo: boolean; saiu: boolean }
 
-/** Antes × agora de um conjunto de linhas, com a mesma regra de base completa do painel. */
-function comparar(linhas: readonly Linha[], vinculo: FiltroVinculo, mes: string, ultimo?: string): Comparacao {
+/** Centro de custo da linha para o filtro: Comercial = distribuidora + centro; Logística = setor; Backoffice = departamento. */
+const chaveCentro = (l: Linha) =>
+  l[2] === 'Comercial' ? `C|${l[3]}|${l[4]}` : l[5] ? `${l[2] === 'Logística' ? 'L' : 'B'}|${l[5]}` : null
+const areaDaChave: Record<string, Area> = { C: 'Comercial', L: 'Logística', B: 'Backoffice' }
+
+const SEM_CENTRO = 'sem detalhamento por centro de custo neste mês'
+
+/**
+ * Antes × agora de um conjunto de linhas, com a mesma regra de base completa do painel.
+ * base: linhas antes do filtro de centro de custo (centro ausente no mês não é base faltando);
+ * semCentro: meses em que a base não traz o centro de custo (com filtro, ficam sem valor).
+ */
+function comparar(
+  linhas: readonly Linha[],
+  vinculo: FiltroVinculo,
+  mes: string,
+  ultimo: string | undefined,
+  base: readonly Linha[],
+  semCentro: Set<string>,
+): Comparacao {
   const anterior = anoAnterior(mes)
-  const [a, b] = serieTotal(linhas, vinculo, [anterior, mes], ultimo)
+  const [a, b] = serieTotal(linhas, vinculo, [anterior, mes], ultimo, base).map((v, i) =>
+    semCentro.has(i === 0 ? anterior : mes) ? { ...v, v: null, faltas: [...v.faltas, SEM_CENTRO] } : v,
+  )
   return { antes: a.v, agora: b.v, faltas: [...a.faltas.map((f) => `${rotuloMes(anterior)}: ${f}`), ...b.faltas.map((f) => `${rotuloMes(mes)}: ${f}`)] }
 }
 
@@ -81,26 +101,66 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
   const [verTodos, setVerTodos] = useState(false)
   const [rotulos, setRotulos] = useState(false)
 
-  const filtradas = useMemo(
+  const [centros, setCentros] = useState<string[]>([])
+
+  // escopo: área e filial (base para saber se o mês está completo)
+  const escopo = useMemo(
     () => filtrar(linhas, { ...FILTROS_VAZIOS, ufs, areas: area === 'Todas' ? [] : [area] }),
     [linhas, ufs, area],
   )
+  // opções do centro de custo: distribuidoras (Vendas/Merchan), setores da Logística e departamentos do Backoffice
+  const opcoesCentro = useMemo<Opcao[]>(() => {
+    const m = new Map<string, Opcao>()
+    for (const l of escopo) {
+      const k = chaveCentro(l)
+      if (!k || m.has(k)) continue
+      m.set(k, l[2] === 'Comercial' ? { value: k, label: l[4] ?? '—', grupo: l[3] ?? '—' } : { value: k, label: l[5]!, grupo: l[2] })
+    }
+    const ordemGrupo = (g: string) => (g === 'Logística' ? 100 : g === 'Backoffice' ? 101 : ordemDistribuidora(g))
+    const ordemCentro: Record<string, number> = { Vendas: 0, Merchan: 1 }
+    return [...m.values()].sort(
+      (a, b) =>
+        ordemGrupo(a.grupo!) - ordemGrupo(b.grupo!) ||
+        (a.grupo ?? '').localeCompare(b.grupo ?? '') ||
+        (ordemCentro[a.label] ?? 9) - (ordemCentro[b.label] ?? 9) ||
+        a.label.localeCompare(b.label),
+    )
+  }, [escopo])
+  const centrosValidos = centros.filter((c) => opcoesCentro.some((o) => o.value === c))
+  const filtradas = useMemo(
+    () => (centrosValidos.length ? escopo.filter((l) => centrosValidos.includes(chaveCentro(l) ?? '')) : escopo),
+    [escopo, centrosValidos],
+  )
+  // meses em que alguma linha das áreas filtradas não traz o centro de custo (ex.: Logística de planilha, sem setor)
+  const semCentro = useMemo(() => {
+    const r = new Set<string>()
+    if (!centrosValidos.length) return r
+    const areasDoFiltro = new Set(centrosValidos.map((c) => areaDaChave[c[0]]))
+    for (const l of escopo) if (areasDoFiltro.has(l[2]) && !chaveCentro(l)) r.add(l[0])
+    return r
+  }, [escopo, centrosValidos])
 
-  const total = useMemo(() => (mes ? comparar(filtradas, vinculo, mes, ultimoGeral) : null), [filtradas, vinculo, mes, ultimoGeral])
+  const total = useMemo(
+    () => (mes ? comparar(filtradas, vinculo, mes, ultimoGeral, escopo, semCentro) : null),
+    [filtradas, vinculo, mes, ultimoGeral, escopo, semCentro],
+  )
+  // um card por área que existe no filtro
   const porArea = useMemo(
     () =>
       mes
-        ? AREAS.filter((a) => area === 'Todas' || a === area).map((a) => ({
+        ? AREAS.filter((a) => (area === 'Todas' || a === area) && filtradas.some((l) => l[2] === a)).map((a) => ({
             area: a,
             ...comparar(
               filtradas.filter((l) => l[2] === a),
               vinculo,
               mes,
               ultimoGeral,
+              escopo.filter((l) => l[2] === a),
+              semCentro,
             ),
           }))
         : [],
-    [filtradas, vinculo, mes, ultimoGeral, area],
+    [filtradas, vinculo, mes, ultimoGeral, area, escopo, semCentro],
   )
 
   // mês a mês: ano de referência × ano anterior (Jan–Dez)
@@ -110,8 +170,10 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     const anterior = String(Number(ano) - 1)
     const mesesAno = intervaloMeses(`${ano}-01`, `${ano}-12`)
     const mesesAnt = intervaloMeses(`${anterior}-01`, `${anterior}-12`)
-    const agora = serieTotal(filtradas, vinculo, mesesAno, ultimoGeral)
-    const antes = serieTotal(filtradas, vinculo, mesesAnt, ultimoGeral)
+    const comCentro = (s: ReturnType<typeof serieTotal>, meses: string[]) =>
+      s.map((v, i) => (semCentro.has(meses[i]) ? { ...v, v: null, faltas: [...v.faltas, SEM_CENTRO] } : v))
+    const agora = comCentro(serieTotal(filtradas, vinculo, mesesAno, ultimoGeral, escopo), mesesAno)
+    const antes = comCentro(serieTotal(filtradas, vinculo, mesesAnt, ultimoGeral, escopo), mesesAnt)
     return {
       rotulos: mesesAno.map((c) => rotuloMes(c).slice(0, 3)),
       faltas: mesesAno.map((_, i) => [
@@ -128,11 +190,20 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
         futuro: !comps.includes(c),
       })),
     }
-  }, [filtradas, vinculo, mes, ultimoGeral, comps])
+  }, [filtradas, vinculo, mes, ultimoGeral, comps, escopo, semCentro])
 
   // onde mudou: ranking de variações
   const ranking = useMemo(() => {
     if (!mes) return { itens: [] as ItemRanking[], incomparaveis: [] as string[], aviso: null as string | null }
+    // com filtro de centro de custo, mês sem esse detalhamento não dá para comparar
+    const semDetalhe = [anoAnterior(mes), mes].filter((c) => semCentro.has(c))
+    if (semDetalhe.length) {
+      return {
+        itens: [] as ItemRanking[],
+        incomparaveis: [] as string[],
+        aviso: `Sem detalhamento por centro de custo em ${semDetalhe.map(rotuloMes).join(' e ')}: não dá para comparar com este filtro.` as string | null,
+      }
+    }
     const anterior = anoAnterior(mes)
     let escopo = filtradas
     let chave: (l: Linha) => string | null
@@ -162,7 +233,17 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     const incomparaveis: string[] = []
     for (const [nome, ls] of grupos) {
       // completude do mês pela base do escopo (cargo/distribuidora ausente no mês = não existia)
-      const c = agrupar === 'area-filial' ? comparar(ls, vinculo, mes, ultimoGeral) : null
+      const c =
+        agrupar === 'area-filial'
+          ? comparar(
+              ls,
+              vinculo,
+              mes,
+              ultimoGeral,
+              escopo.filter((l) => `${l[2]} ${l[1]}` === nome),
+              semCentro,
+            )
+          : null
       if (c && c.faltas.length) {
         incomparaveis.push(nome)
         continue
@@ -183,7 +264,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     }
     itens.sort((a, b) => b.dif - a.dif || (agrupar === 'distribuidora' ? compararDistribuidoras(a.nome, b.nome) : a.nome.localeCompare(b.nome)))
     return { itens, incomparaveis, aviso }
-  }, [filtradas, vinculo, mes, ultimoGeral, agrupar])
+  }, [filtradas, vinculo, mes, ultimoGeral, agrupar, escopo, semCentro])
 
   if (!mes || !total || !grafico) {
     return (
@@ -236,6 +317,15 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
               valor={ufs}
               onMudar={setUfs}
               opcoes={UFS.map((u) => ({ value: u, label: u, dica: ROTULO_UF[u] }))}
+            />
+          </CampoFiltro>
+          <CampoFiltro rotulo="Centro de custo" className="w-60">
+            <FiltroMulti
+              rotulo="Centro de custo"
+              valor={centrosValidos}
+              onMudar={setCentros}
+              opcoes={opcoesCentro}
+              corGrupo={(g) => (g === 'Logística' || g === 'Backoffice' ? COR_AREA[g] : corDistribuidora(g))}
             />
           </CampoFiltro>
           <CampoFiltro rotulo="Vínculo">
@@ -424,7 +514,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
                       </TooltipContent>
                     </Tooltip>
                     <span className="justify-self-end">
-                      <Variacao dif={i.dif} base={i.antes || null} />
+                      <Variacao dif={i.dif} base={null} />
                     </span>
                   </li>
                 )
