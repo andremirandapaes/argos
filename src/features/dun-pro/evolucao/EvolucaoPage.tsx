@@ -64,7 +64,10 @@ export default function EvolucaoPage() {
   )
   const pontos: PontoEvolucao[] = useMemo(() => {
     const porMes = new Map(totaisDoAno.map((t) => [t.mes_ref!, t]))
-    return mesesDoAno(ano ?? 0).map((m) => {
+    // de Jan até o último mês com carga (o gráfico cresce conforme entram meses novos;
+    // mês sem carga no meio continua aparecendo, vazio)
+    const ultimo = totaisDoAno.reduce((u, t) => (t.mes_ref! > u ? t.mes_ref! : u), '')
+    return mesesDoAno(ano ?? 0).filter((m) => m <= ultimo).map((m) => {
       const t = porMes.get(m)
       return {
         mesRef: m,
