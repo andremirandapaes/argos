@@ -356,3 +356,17 @@ h1 {
 .ag-cell.hc-mes-ref {
   background-color: color-mix(in oklch, var(--primary) 6%, transparent);
 }
+/* nome do mês centralizado no cabeçalho agrupado */
+.ag-header-group-cell.ag-centro .ag-header-group-cell-label {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+/* linha Total em destaque */
+.ag-row.hc-linha-total {
+  background-color: color-mix(in oklch, var(--primary) 16%, var(--card));
+  color: var(--foreground);
+  font-weight: 700;
+}
+.ag-row.hc-linha-total .ag-cell.hc-mes-ref {
+  background-color: color-mix(in oklch, var(--primary) 10%, transparent);
+}

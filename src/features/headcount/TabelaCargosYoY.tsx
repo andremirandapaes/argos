@@ -208,6 +208,11 @@ export function TabelaCargosYoY({
         minWidth: 180,
         cellClass: (p) => (p.data?.tipo === 'terc' ? 'font-medium text-hc-terc' : p.data?.tipo === 'total' ? 'font-semibold' : undefined),
         tooltipField: 'label',
+        // clicar no cabeçalho ordena A–Z, Z–A e volta para a ordem por quantidade
+        sortable: true,
+        sortingOrder: ['asc', 'desc', null],
+        comparator: (a: string, b: string) => a.localeCompare(b, 'pt-BR'),
+        headerTooltip: 'Clique para ordenar de A a Z',
       },
       ...meses.map<ColGroupDef<LinhaGrade>>((m) => ({
         headerName: rotuloMes(m).slice(0, 3),
@@ -298,6 +303,7 @@ export function TabelaCargosYoY({
               columnDefs={colunas}
               defaultColDef={{ resizable: true, suppressMovable: true, sortable: false }}
               getRowId={(p) => p.data.id}
+              getRowClass={(p) => (p.data?.tipo === 'total' ? 'hc-linha-total' : undefined)}
               quickFilterText={busca}
               onModelUpdated={(e) => setVisiveis(e.api.getDisplayedRowCount())}
               includeHiddenColumnsInQuickFilter={false}
