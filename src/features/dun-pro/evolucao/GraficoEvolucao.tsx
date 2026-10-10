@@ -172,6 +172,17 @@ export function GraficoEvolucao({
     onMouseLeave: concluirArraste,
   }
 
+  // gráfico sob o mouse: a dica aparece só nele (o mês continua destacado nos dois, pelo syncId)
+  const [sobre, setSobre] = useState<'barras' | 'linhas' | null>(null)
+  const eventosDe = (g: 'barras' | 'linhas') => ({
+    ...eventos,
+    onMouseEnter: () => setSobre(g),
+    onMouseLeave: () => {
+      setSobre(null)
+      concluirArraste()
+    },
+  })
+
   // faixa destacada enquanto arrasta (ao soltar, o gráfico passa a mostrar só esses meses)
   const faixa =
     arraste && pontos.length ? (
@@ -192,7 +203,7 @@ export function GraficoEvolucao({
         <figcaption className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Faturamento líquido (R$)
         </figcaption>
-        <div {...eventos}>
+        <div {...eventosDe('barras')}>
           <ChartContainer config={configFaturamento} className="aspect-auto h-52 w-full cursor-crosshair">
             <BarChart data={pontos} syncId="evolucao" margin={margem} barCategoryGap="22%">
               <CartesianGrid vertical={false} strokeOpacity={0.5} />
@@ -200,7 +211,7 @@ export function GraficoEvolucao({
               {/* eixo vertical oculto (como em Despesas): valores nos rótulos e na dica */}
               <YAxis hide domain={[0, 'auto']} />
               {faixa}
-              <ChartTooltip cursor={arraste ? false : { fill: 'var(--muted)', opacity: 0.6 }} content={arraste ? () => null : DicaMes} />
+              <ChartTooltip cursor={arraste ? false : { fill: 'var(--muted)', opacity: 0.6 }} content={arraste || sobre !== 'barras' ? () => null : DicaMes} />
               <Bar dataKey="faturamento" fill="var(--color-faturamento)" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                 {rotulos && <LabelList dataKey="faturamento" {...estiloRotulo} formatter={rotuloMoeda} />}
               </Bar>
@@ -213,7 +224,7 @@ export function GraficoEvolucao({
         <figcaption className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Percentuais sobre o faturamento
         </figcaption>
-        <div {...eventos}>
+        <div {...eventosDe('linhas')}>
           <ChartContainer config={configPercentuais} className="aspect-auto h-60 w-full cursor-crosshair">
             <LineChart data={pontos} syncId="evolucao" margin={margem}>
               <CartesianGrid vertical={false} strokeOpacity={0.5} />
@@ -221,7 +232,7 @@ export function GraficoEvolucao({
               <XAxis {...eixoX} scale="band" />
               <YAxis hide domain={[0, 'auto']} />
               {faixa}
-              <ChartTooltip cursor={!arraste} content={arraste ? () => null : DicaMes} />
+              <ChartTooltip cursor={!arraste} content={arraste || sobre !== 'linhas' ? () => null : DicaMes} />
               <ChartLegend content={<ChartLegendContent />} verticalAlign="top" />
               {(['margemPct', 'lbPct', 'custoOp'] as const).map((chave) => (
                 <Line
