@@ -221,7 +221,7 @@ export function AvisoParcial({ itens, claro = false }: { itens: string[]; /** so
   if (!itens.length) return null
   return (
     <p
-      className={cn('mt-1 flex items-start gap-1.5 text-xs whitespace-normal', claro ? 'text-amber-200' : 'text-alerta-foreground')}
+      className={cn('mt-1 flex items-start gap-1.5 text-xs whitespace-normal', claro ? 'text-kpi-destaque-alerta' : 'text-alerta-foreground')}
       title={itens.join('\n')}
     >
       <AlertTriangle className="mt-px size-3.5 shrink-0" />

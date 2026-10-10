@@ -113,7 +113,7 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
                 <SidebarMenuSubButton
                   render={<NavLink to={rota} />}
                   isActive={rotaAtiva(pathname, rota)}
-                  className="h-8 data-active:font-medium data-active:text-white [&>svg]:text-sidebar-foreground/60 data-active:[&>svg]:text-sidebar-primary"
+                  className="h-8 data-active:font-medium data-active:text-sidebar-accent-foreground [&>svg]:text-sidebar-foreground/60 data-active:[&>svg]:text-sidebar-primary"
                 >
                   <tela.icone />
                   <span>{tela.titulo}</span>
@@ -146,7 +146,7 @@ function GrupoSistema({ modulo, papel }: { modulo: Modulo; papel: Papel | null }
                   render={<NavLink to={rota} />}
                   isActive={rotaAtiva(pathname, rota)}
                   tooltip={tela.titulo}
-                  className="data-active:text-white data-active:[&_svg]:text-sidebar-primary"
+                  className="data-active:text-sidebar-accent-foreground data-active:[&_svg]:text-sidebar-primary"
                 >
                   <tela.icone />
                   <span>{tela.titulo}</span>

@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 /**
  * Cor do card. Cada tom tem faixa lateral e chip do ícone na mesma cor;
- * "destaque" é o card cheio em azul-marinho (resultado principal, ex.: LB¹).
+ * "destaque" é o card cheio no gradiente da marca, marinho → petróleo (resultado principal, ex.: LB¹).
  */
 export type TomIndicador = 'fat' | 'margem' | 'despesa' | 'custo' | 'neutro' | 'destaque'
 
@@ -47,22 +47,22 @@ export function Indicador({
     <div
       className={cn(
         'group relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl p-4 pl-5 transition-all duration-200',
-        'shadow-[0_1px_2px_rgb(15_23_42/0.05),0_4px_14px_-4px_rgb(15_23_42/0.10)] hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgb(15_23_42/0.06),0_10px_24px_-6px_rgb(15_23_42/0.16)]',
+        'shadow-card hover:-translate-y-0.5 hover:shadow-card-hover',
         destaque
-          ? 'bg-linear-to-br from-[oklch(0.33_0.1_262)] to-[oklch(0.21_0.06_266)] text-white ring-1 ring-white/10'
-          : 'border bg-card dark:shadow-none',
+          ? 'bg-linear-to-br from-kpi-destaque-de to-kpi-destaque-ate text-kpi-destaque-texto ring-1 ring-kpi-destaque-texto/10'
+          : 'border bg-card',
       )}
     >
       {/* faixa de cor à esquerda */}
       <span
         aria-hidden
-        className={cn('absolute inset-y-0 left-0 w-1', destaque ? 'bg-[oklch(0.72_0.14_245)]' : cores!.faixa)}
+        className={cn('absolute inset-y-0 left-0 w-1', destaque ? 'bg-kpi-destaque-brilho' : cores!.faixa)}
       />
       {/* brilho decorativo no card de destaque */}
       {destaque && (
         <span
           aria-hidden
-          className="pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-[oklch(0.72_0.14_245)] opacity-20 blur-2xl"
+          className="pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-kpi-destaque-brilho opacity-20 blur-2xl"
         />
       )}
 
@@ -70,7 +70,7 @@ export function Indicador({
         <span
           className={cn(
             'truncate text-[11px] font-semibold tracking-wider uppercase',
-            destaque ? 'text-white/75' : 'text-muted-foreground',
+            destaque ? 'text-kpi-destaque-texto/75' : 'text-muted-foreground',
           )}
         >
           {rotulo}
@@ -79,7 +79,7 @@ export function Indicador({
           <span
             className={cn(
               'flex size-8 shrink-0 items-center justify-center rounded-lg',
-              destaque ? 'bg-white/12 text-white' : cores!.chip,
+              destaque ? 'bg-kpi-destaque-texto/12 text-kpi-destaque-texto' : cores!.chip,
             )}
           >
             <Icone className="size-4" strokeWidth={2.25} />
@@ -89,15 +89,15 @@ export function Indicador({
 
       {carregando ? (
         <div className="relative flex flex-col gap-2">
-          <Skeleton className={cn('h-7 w-3/4', destaque && 'bg-white/15')} />
-          <Skeleton className={cn('h-4 w-1/3', destaque && 'bg-white/15')} />
+          <Skeleton className={cn('h-7 w-3/4', destaque && 'bg-kpi-destaque-texto/15')} />
+          <Skeleton className={cn('h-4 w-1/3', destaque && 'bg-kpi-destaque-texto/15')} />
         </div>
       ) : (
         <div className="relative flex flex-col gap-1">
           <div
             className={cn(
               'truncate text-[22px] leading-tight font-semibold tracking-tight tabular-nums',
-              negativo && (destaque ? 'text-red-300' : 'text-destructive'),
+              negativo && (destaque ? 'text-kpi-destaque-negativo' : 'text-destructive'),
             )}
           >
             {valor}
@@ -106,7 +106,7 @@ export function Indicador({
           <div
             className={cn(
               'min-h-5 truncate text-sm font-medium tabular-nums',
-              destaque ? 'text-white/80' : 'text-muted-foreground',
+              destaque ? 'text-kpi-destaque-texto/80' : 'text-muted-foreground',
             )}
           >
             {apoio}

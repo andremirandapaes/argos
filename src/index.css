@@ -2,10 +2,14 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "@fontsource/dm-serif-display";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Identidade Argos: serifada de alto contraste (mais próxima do logotipo) só no logotipo, títulos de página e login;
+       títulos de card/diálogo (font-heading do shadcn) e corpo em Geist */
+    --font-marca: 'DM Serif Display', Georgia, serif;
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
@@ -28,6 +32,25 @@
     --color-positivo: var(--positivo);
     --color-alerta: var(--alerta);
     --color-alerta-foreground: var(--alerta-foreground);
+    --color-destaque: var(--destaque);
+    --color-destaque-texto: var(--destaque-texto);
+    --color-overlay: var(--overlay);
+    --color-marca-petroleo: var(--marca-petroleo);
+    --color-marca-ambar: var(--marca-ambar);
+    --color-marca-turquesa: var(--marca-turquesa);
+    --color-marca-marinho: var(--marca-marinho);
+    --color-marca-creme: var(--marca-creme);
+    --color-marca-noite: var(--marca-noite);
+    --color-kpi-destaque-de: var(--kpi-destaque-de);
+    --color-kpi-destaque-ate: var(--kpi-destaque-ate);
+    --color-kpi-destaque-texto: var(--kpi-destaque-texto);
+    --color-kpi-destaque-brilho: var(--kpi-destaque-brilho);
+    --color-kpi-destaque-positivo: var(--kpi-destaque-positivo);
+    --color-kpi-destaque-negativo: var(--kpi-destaque-negativo);
+    --color-kpi-destaque-alerta: var(--kpi-destaque-alerta);
+    --shadow-card: var(--sombra-card);
+    --shadow-card-hover: var(--sombra-card-hover);
+    --shadow-destaque: var(--sombra-destaque);
     --color-kpi-fat: var(--kpi-fat);
     --color-kpi-margem: var(--kpi-margem);
     --color-kpi-despesa: var(--kpi-despesa);
@@ -65,27 +88,40 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ARGOS — tema claro: conteúdo branco "clean", texto quase preto,
-   destaque azul-marinho e sidebar em azul-escuro quase preto. */
+/* ARGOS — identidade da marca (logo "olho de pavão" em 4 camadas).
+   Cores da marca: petróleo #1F6F6B · âmbar #E8A33D · turquesa #3FB8AF · marinho #14304A · creme #F4F1EA · noite #12161C.
+   Tema claro: fundo branco, creme nos detalhes (superfícies suaves, cabeçalhos), petróleo como cor de ação.
+   Contraste conferido (WCAG AA): textos >= 4,5:1; foco e bordas de campo >= 3:1. */
 :root {
-    --background: oklch(0.99 0.002 260);
-    --foreground: oklch(0.17 0.02 265);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.17 0.02 265);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.17 0.02 265);
-    --primary: oklch(0.3 0.09 262);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.96 0.008 260);
-    --secondary-foreground: oklch(0.22 0.04 262);
-    --muted: oklch(0.965 0.006 260);
-    --muted-foreground: oklch(0.5 0.02 262);
-    --accent: oklch(0.95 0.015 260);
-    --accent-foreground: oklch(0.22 0.04 262);
-    --destructive: oklch(0.577 0.215 27);
-    --positivo: oklch(0.55 0.13 155);
-    --alerta: oklch(0.96 0.06 90);
-    --alerta-foreground: oklch(0.42 0.1 70);
+    /* cores puras da marca (as mesmas nos dois temas) */
+    --marca-petroleo: #1f6f6b;
+    --marca-ambar: #e8a33d;
+    --marca-turquesa: #3fb8af;
+    --marca-marinho: #14304a;
+    --marca-creme: #f4f1ea;
+    --marca-noite: #12161c;
+
+    --background: #ffffff;
+    --foreground: #12161c;
+    --card: #ffffff;
+    --card-foreground: #12161c;
+    --popover: #ffffff;
+    --popover-foreground: #12161c;
+    --primary: #1f6f6b; /* creme sobre petróleo: 5,25:1 */
+    --primary-foreground: #f4f1ea;
+    --secondary: #f4f1ea;
+    --secondary-foreground: #14304a;
+    --muted: #f4f1ea;
+    --muted-foreground: #596270; /* 5,47:1 sobre o creme; 6,4:1 sobre o branco */
+    --accent: #e6f1ef; /* hover: petróleo bem claro */
+    --accent-foreground: #14304a;
+    --destructive: #b3362d;
+    --positivo: #2e7a47; /* sucesso */
+    --alerta: #fbefd6; /* aviso: fundo */
+    --alerta-foreground: #7a4e0c; /* aviso: texto (6,3:1) */
+    --destaque: #e8a33d; /* âmbar da marca: só elementos gráficos (como texto não atinge AA no claro) */
+    --destaque-texto: #9a6514; /* âmbar para texto (4,9:1) */
+    --overlay: rgb(18 22 28 / 0.32); /* fundo escuro atrás de diálogos e painéis */
     --bege-1: oklch(0.945 0.032 82);
     --bege-2: oklch(0.89 0.06 78);
     --azul-claro: oklch(0.93 0.035 245);
@@ -93,16 +129,24 @@
     --kpi-margem: oklch(0.68 0.11 88);
     --kpi-despesa: oklch(0.58 0.15 32);
     --kpi-custo: oklch(0.6 0.105 195);
+    /* card de destaque (resultado principal): gradiente marinho → petróleo escuro, texto creme (todos os textos >= 4,9:1) */
+    --kpi-destaque-de: #14304a;
+    --kpi-destaque-ate: #18555a;
+    --kpi-destaque-texto: #f4f1ea;
+    --kpi-destaque-brilho: #3fb8af;
+    --kpi-destaque-positivo: #9be3bc;
+    --kpi-destaque-negativo: #ffb4ae;
+    --kpi-destaque-alerta: #f7d08a;
     /* séries de % da Evolução (validadas no dataviz validate_palette, todos os pares) */
     --serie-margem: oklch(0.64 0.12 80);
     --serie-lb: oklch(0.5 0.17 275);
-    /* HeadCount: total (tinta), áreas e vínculo */
-    --hc-total: oklch(0.3 0.06 262);
-    --hc-comercial: oklch(0.55 0.15 255);
-    --hc-logistica: oklch(0.64 0.12 75);
-    --hc-backoffice: oklch(0.58 0.13 155);
-    --hc-clt: oklch(0.42 0.09 262);
-    --hc-terc: oklch(0.63 0.15 38);
+    /* HeadCount: total (tinta), áreas e vínculo nos matizes da marca (validados no dataviz validate_palette) */
+    --hc-total: #14304a;
+    --hc-comercial: #008c80;
+    --hc-logistica: #c27f12;
+    --hc-backoffice: #2563a8;
+    --hc-clt: #008c80;
+    --hc-terc: #c27f12;
     /* distribuidoras (diretriz interna: ordem e cor fixas; validadas no dataviz validate_palette nesta ordem) */
     --dist-dunorte: #b00c15;
     --dist-meta-norte: #57c173;
@@ -110,46 +154,53 @@
     --dist-super-giro: #d6a20a;
     --dist-rota-norte: #32a5d4;
     --dist-mix-norte: #224fa7;
-    --border: oklch(0.915 0.008 260);
-    --input: oklch(0.915 0.008 260);
-    --ring: oklch(0.45 0.12 262);
-    --chart-1: oklch(0.3 0.09 262);
-    --chart-2: oklch(0.55 0.15 255);
-    --chart-3: oklch(0.7 0.12 230);
-    --chart-4: oklch(0.6 0.13 155);
-    --chart-5: oklch(0.58 0.2 27);
-    --radius: 0.5rem;
-    --sidebar: oklch(0.19 0.035 265);
-    --sidebar-foreground: oklch(0.9 0.01 260);
-    --sidebar-primary: oklch(0.62 0.15 255);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.26 0.045 265);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.28 0.04 265);
-    --sidebar-ring: oklch(0.62 0.15 255);
+    --border: #e7e2d6;
+    --input: #8c8475; /* borda de campo: 3,6:1 */
+    --ring: #1f6f6b;
+    --chart-1: #1f6f6b;
+    --chart-2: #c27f12;
+    --chart-3: #2563a8;
+    --chart-4: #3fb8af;
+    --chart-5: #b3362d;
+    --radius: 0.625rem;
+    /* sombras com o tom da marca (noite), não azul-acinzentado */
+    --sombra-card: 0 1px 2px rgb(18 22 28 / 0.05), 0 4px 14px -4px rgb(18 22 28 / 0.1);
+    --sombra-card-hover: 0 2px 4px rgb(18 22 28 / 0.06), 0 10px 24px -6px rgb(18 22 28 / 0.16);
+    --sombra-destaque: 0 4px 14px -4px rgb(18 22 28 / 0.25);
+    --sidebar: #12161c;
+    --sidebar-foreground: #f4f1ea;
+    --sidebar-primary: #3fb8af; /* turquesa sobre noite: 7,5:1 */
+    --sidebar-primary-foreground: #12161c;
+    --sidebar-accent: #1c232c;
+    --sidebar-accent-foreground: #f4f1ea;
+    --sidebar-border: #232a33;
+    --sidebar-ring: #3fb8af;
 }
 
-/* ARGOS — tema escuro: fundo preto, superfícies com leve tom azul. */
+/* ARGOS — tema escuro: fundo noite da marca, superfícies em grafite azulado, turquesa como cor de ação. */
 .dark {
     color-scheme: dark; /* barras de rolagem e controles nativos também no escuro */
-    --background: oklch(0.13 0.01 265);
-    --foreground: oklch(0.95 0.005 260);
-    --card: oklch(0.17 0.018 265);
-    --card-foreground: oklch(0.95 0.005 260);
-    --popover: oklch(0.17 0.018 265);
-    --popover-foreground: oklch(0.95 0.005 260);
-    --primary: oklch(0.62 0.15 255);
-    --primary-foreground: oklch(0.13 0.01 265);
-    --secondary: oklch(0.23 0.025 265);
-    --secondary-foreground: oklch(0.95 0.005 260);
-    --muted: oklch(0.21 0.02 265);
-    --muted-foreground: oklch(0.68 0.02 262);
-    --accent: oklch(0.24 0.03 265);
-    --accent-foreground: oklch(0.95 0.005 260);
-    --destructive: oklch(0.68 0.19 24);
-    --positivo: oklch(0.72 0.14 155);
-    --alerta: oklch(0.3 0.06 80);
-    --alerta-foreground: oklch(0.88 0.1 90);
+    --background: #12161c;
+    --foreground: #f4f1ea;
+    --card: #1a1f27;
+    --card-foreground: #f4f1ea;
+    --popover: #1a1f27;
+    --popover-foreground: #f4f1ea;
+    --primary: #3fb8af; /* noite sobre turquesa: 7,5:1 */
+    --primary-foreground: #12161c;
+    --secondary: #232a33;
+    --secondary-foreground: #f4f1ea;
+    --muted: #232a33;
+    --muted-foreground: #a3acb7; /* 7,2:1 sobre o card */
+    --accent: #1d2b2e;
+    --accent-foreground: #f4f1ea;
+    --destructive: #f07a72;
+    --positivo: #5fc48c;
+    --alerta: #3a2d14;
+    --alerta-foreground: #f2c67e;
+    --destaque: #e8a33d;
+    --destaque-texto: #e8a33d; /* 7,7:1 sobre o card */
+    --overlay: rgb(0 0 0 / 0.5);
     --bege-1: oklch(0.245 0.025 75);
     --bege-2: oklch(0.31 0.045 75);
     --azul-claro: oklch(0.27 0.045 250);
@@ -158,36 +209,46 @@
     /* despesa e custo validados com o dataviz validate_palette (claro e escuro) */
     --kpi-despesa: oklch(0.65 0.15 32);
     --kpi-custo: oklch(0.65 0.11 195);
+    --kpi-destaque-de: #10273c;
+    --kpi-destaque-ate: #164a4e;
+    --kpi-destaque-texto: #f4f1ea;
+    --kpi-destaque-brilho: #3fb8af;
+    --kpi-destaque-positivo: #9be3bc;
+    --kpi-destaque-negativo: #ffb4ae;
+    --kpi-destaque-alerta: #f7d08a;
     --serie-margem: oklch(0.655 0.12 82);
     --serie-lb: oklch(0.6 0.16 280);
-    --hc-total: oklch(0.93 0.01 260);
-    --hc-comercial: oklch(0.68 0.14 250);
-    --hc-logistica: oklch(0.76 0.12 78);
-    --hc-backoffice: oklch(0.72 0.14 155);
-    --hc-clt: oklch(0.66 0.11 255);
-    --hc-terc: oklch(0.71 0.14 40);
+    --hc-total: #f4f1ea;
+    --hc-comercial: #22a196;
+    --hc-logistica: #c27f16;
+    --hc-backoffice: #4f86d0;
+    --hc-clt: #22a196;
+    --hc-terc: #c27f16;
     --dist-dunorte: #b31319;
     --dist-meta-norte: #41ae61;
     --dist-elo-norte: #8968d4;
     --dist-super-giro: #bc8900;
     --dist-rota-norte: #1f99c7;
     --dist-mix-norte: #2e5bb4;
-    --border: oklch(1 0 0 / 9%);
-    --input: oklch(1 0 0 / 14%);
-    --ring: oklch(0.62 0.15 255);
-    --chart-1: oklch(0.62 0.15 255);
-    --chart-2: oklch(0.78 0.1 230);
-    --chart-3: oklch(0.5 0.12 262);
-    --chart-4: oklch(0.72 0.14 155);
-    --chart-5: oklch(0.68 0.19 24);
-    --sidebar: oklch(0.1 0.012 265);
-    --sidebar-foreground: oklch(0.9 0.01 260);
-    --sidebar-primary: oklch(0.62 0.15 255);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.2 0.03 265);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 8%);
-    --sidebar-ring: oklch(0.62 0.15 255);
+    --border: rgb(244 241 234 / 0.1);
+    --input: #6b7481; /* borda de campo: 3,5:1 */
+    --ring: #3fb8af;
+    --chart-1: #3fb8af;
+    --chart-2: #e8a33d;
+    --chart-3: #4f86d0;
+    --chart-4: #22a196;
+    --chart-5: #f07a72;
+    --sombra-card: 0 0 0 transparent; /* no escuro a borda separa; sem sombra */
+    --sombra-card-hover: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+    --sombra-destaque: 0 4px 14px -4px rgb(0 0 0 / 0.5);
+    --sidebar: #0d1015;
+    --sidebar-foreground: #f4f1ea;
+    --sidebar-primary: #3fb8af;
+    --sidebar-primary-foreground: #12161c;
+    --sidebar-accent: #1a2028;
+    --sidebar-accent-foreground: #f4f1ea;
+    --sidebar-border: rgb(244 241 234 / 0.08);
+    --sidebar-ring: #3fb8af;
 }
 
 /* AG Grid: cabeçalho centralizado e colunas com fundo bege (cabeçalho, linhas e TOTAL) */
@@ -262,4 +323,14 @@
 }
 .hc-fora .hc-nome-cargo {
   text-decoration: line-through;
+}
+
+/* Títulos de página (h1) na serifada da marca. Fica fora de @layer de propósito: assim vale
+   por cima das classes de peso/tamanho das telas, sem precisar mexer em cada uma. */
+h1 {
+  font-family: var(--font-marca);
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 1.625rem;
+  line-height: 1.2;
 }

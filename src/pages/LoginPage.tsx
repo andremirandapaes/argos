@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useSessao } from '@/auth/sessao-context'
 import { ROTA_INICIAL } from '@/modulos'
+import simbolo from '@/assets/marca/argos-simbolo.svg'
 import { ArgosMarca } from '@/components/ArgosMarca'
 import { TemaToggle } from '@/components/TemaToggle'
 import { Button } from '@/components/ui/button'
@@ -41,7 +42,7 @@ export function LoginPage() {
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-sidebar p-10 text-sidebar-foreground lg:flex">
         <ArgosMarca />
         <div className="relative z-10 max-w-md">
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-white">
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight text-sidebar-foreground">
             Relatórios gerenciais,
             <br />
             sem planilha.
@@ -51,6 +52,14 @@ export function LoginPage() {
           </p>
         </div>
         <p className="text-xs opacity-40">NIC · Grupo Medeiros</p>
+        {/* símbolo da marca como marca-d'água */}
+        <img
+          src={simbolo}
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none absolute -right-28 -bottom-24 size-[30rem] opacity-[0.09]"
+        />
         {/* grade decorativa */}
         <div
           aria-hidden

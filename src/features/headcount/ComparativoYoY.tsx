@@ -246,20 +246,20 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
 
       {/* destaque: mês × mesmo mês do ano anterior */}
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-5" aria-label="Comparativo do mês">
-        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-[oklch(0.33_0.1_262)] to-[oklch(0.21_0.06_266)] p-6 text-white shadow-[0_4px_14px_-4px_rgb(15_23_42/0.25)] ring-1 ring-white/10 xl:col-span-2">
-          <span aria-hidden className="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-[oklch(0.72_0.14_245)] opacity-20 blur-2xl" />
+        <div className="relative overflow-hidden rounded-xl bg-linear-to-br from-kpi-destaque-de to-kpi-destaque-ate p-6 text-kpi-destaque-texto shadow-destaque ring-1 ring-kpi-destaque-texto/10 xl:col-span-2">
+          <span aria-hidden className="pointer-events-none absolute -top-12 -right-12 size-40 rounded-full bg-kpi-destaque-brilho opacity-20 blur-2xl" />
           <div className="relative flex flex-col gap-4">
-            <span className="text-[11px] font-semibold tracking-wider text-white/75 uppercase">
+            <span className="text-[11px] font-semibold tracking-wider text-kpi-destaque-texto/75 uppercase">
               Headcount · {rotuloMes(mes)} vs {rotuloMes(anterior)}
             </span>
             <div className="flex items-end gap-4">
               <div className="flex flex-col">
-                <span className="text-xs text-white/60">{rotuloMes(anterior)}</span>
-                <span className="text-2xl font-semibold text-white/70 tabular-nums">{fmtPessoas(total.antes)}</span>
+                <span className="text-xs text-kpi-destaque-texto/75">{rotuloMes(anterior)}</span>
+                <span className="text-2xl font-semibold text-kpi-destaque-texto/75 tabular-nums">{fmtPessoas(total.antes)}</span>
               </div>
-              <ArrowRight className="mb-1.5 size-5 text-white/50" />
+              <ArrowRight className="mb-1.5 size-5 text-kpi-destaque-texto/60" />
               <div className="flex flex-col">
-                <span className="text-xs text-white/60">{rotuloMes(mes)}</span>
+                <span className="text-xs text-kpi-destaque-texto/75">{rotuloMes(mes)}</span>
                 <span className="text-4xl leading-none font-bold tracking-tight tabular-nums">{fmtPessoas(total.agora)}</span>
               </div>
             </div>
@@ -268,19 +268,19 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
                 <span
                   className={cn(
                     'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm font-semibold tabular-nums',
-                    dif > 0 ? 'bg-emerald-400/20 text-emerald-200' : dif < 0 ? 'bg-red-400/20 text-red-200' : 'bg-white/10 text-white/80',
+                    dif > 0 ? 'bg-kpi-destaque-positivo/15 text-kpi-destaque-positivo' : dif < 0 ? 'bg-kpi-destaque-negativo/15 text-kpi-destaque-negativo' : 'bg-kpi-destaque-texto/10 text-kpi-destaque-texto/80',
                   )}
                 >
                   {dif > 0 ? <ArrowUpRight className="size-4" /> : dif < 0 ? <ArrowDownRight className="size-4" /> : <Minus className="size-4" />}
                   {fmtVariacao(dif)} {total.antes ? `· ${fmtPct1(dif / total.antes)}` : ''}
                 </span>
               ) : (
-                <span className="text-sm text-amber-200">Comparação indisponível: base incompleta</span>
+                <span className="text-sm text-kpi-destaque-alerta">Comparação indisponível: base incompleta</span>
               )}
-              <span className="text-xs text-white/60">em 12 meses</span>
+              <span className="text-xs text-kpi-destaque-texto/75">em 12 meses</span>
             </div>
             {total.faltas.length > 0 && (
-              <p className="text-xs text-amber-200" title={total.faltas.join('\n')}>
+              <p className="text-xs text-kpi-destaque-alerta" title={total.faltas.join('\n')}>
                 {total.faltas[0]}
                 {total.faltas.length > 1 ? ` e mais ${total.faltas.length - 1}` : ''}
               </p>
@@ -291,7 +291,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
           {porArea.map((a) => {
             const d = a.antes != null && a.agora != null ? a.agora - a.antes : null
             return (
-              <div key={a.area} className="relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-card p-4 pl-5 shadow-[0_1px_2px_rgb(15_23_42/0.05),0_4px_14px_-4px_rgb(15_23_42/0.10)] dark:shadow-none">
+              <div key={a.area} className="relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-card p-4 pl-5 shadow-card">
                 <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ background: COR_AREA[a.area] }} />
                 <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">{a.area}</span>
                 <div className="flex items-baseline gap-2 tabular-nums">

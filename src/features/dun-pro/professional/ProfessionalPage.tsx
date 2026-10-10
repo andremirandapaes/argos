@@ -210,7 +210,7 @@ export default function ProfessionalPage() {
             />
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-[0_1px_2px_rgb(15_23_42/0.05),0_4px_14px_-4px_rgb(15_23_42/0.10)] dark:shadow-none">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-card">
             <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5">
               <div className="text-sm font-medium">
                 Departamentos exclusivos
