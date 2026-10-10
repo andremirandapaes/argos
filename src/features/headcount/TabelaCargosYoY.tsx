@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
-import type { ColDef, ColGroupDef, GridApi } from 'ag-grid-community'
+import type { ColDef, ColGroupDef } from 'ag-grid-community'
 import { Download, Loader2, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { linhasExibidas, temaArgos } from '@/lib/aggrid'
@@ -263,10 +263,13 @@ export function TabelaCargosYoY({
     ]
   }, [meses, mes, ano, anoAnt, verPor])
 
+  const grade = useRef<AgGridReact<LinhaGrade>>(null)
+
   // exporta o que está na tela: busca, ordem e Cargo/Família (Terceirizados no fim, Total por último)
   const [exportando, setExportando] = useState(false)
   async function exportar() {
-    if (!api.current) return
+    const api = grade.current?.api
+    if (!api) return
     setExportando(true)
     try {
       const numero = (c: unknown) => {
@@ -292,7 +295,7 @@ export function TabelaCargosYoY({
         ],
         grupos: [{ titulo: '', colunas: 1 }, ...meses.map((m) => ({ titulo: rotuloMes(m).slice(0, 3), colunas: 3 }))],
         colunas: colunasExcel,
-        linhas: [...linhasExibidas(api.current), ...rodape.filter((l) => l.tipo !== 'total')],
+        linhas: [...linhasExibidas(api), ...rodape.filter((l) => l.tipo !== 'total')],
         total: rodape.find((l) => l.tipo === 'total'),
       })
     } catch (e) {
@@ -303,9 +306,8 @@ export function TabelaCargosYoY({
   }
 
   // abre a tabela já no mês de referência
-  const api = useRef<GridApi<LinhaGrade> | null>(null)
   useEffect(() => {
-    api.current?.ensureColumnVisible(`${mes}|d`, 'end')
+    grade.current?.api?.ensureColumnVisible(`${mes}|d`, 'end')
   }, [mes, colunas])
 
   return (
@@ -358,10 +360,8 @@ export function TabelaCargosYoY({
               quickFilterText={busca}
               onModelUpdated={(e) => setVisiveis(e.api.getDisplayedRowCount())}
               includeHiddenColumnsInQuickFilter={false}
-              onGridReady={(e) => {
-                api.current = e.api
-                e.api.ensureColumnVisible(`${mes}|d`, 'end')
-              }}
+              ref={grade}
+              onGridReady={(e) => e.api.ensureColumnVisible(`${mes}|d`, 'end')}
               suppressCellFocus
               animateRows={false}
               tooltipShowDelay={300}
