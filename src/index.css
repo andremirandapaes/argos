@@ -20,6 +20,8 @@
     --color-sidebar-primary: var(--sidebar-primary);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar: var(--sidebar);
+    --color-sidebar-hover: var(--sidebar-hover);
+    --color-sidebar-hover-borda: var(--sidebar-hover-borda);
     --color-chart-5: var(--chart-5);
     --color-chart-4: var(--chart-4);
     --color-chart-3: var(--chart-3);
@@ -167,15 +169,18 @@
     --sombra-card: 0 1px 2px rgb(18 22 28 / 0.05), 0 4px 14px -4px rgb(18 22 28 / 0.1);
     --sombra-card-hover: 0 2px 4px rgb(18 22 28 / 0.06), 0 10px 24px -6px rgb(18 22 28 / 0.16);
     --sombra-destaque: 0 4px 14px -4px rgb(18 22 28 / 0.25);
-    /* sidebar flutuante clara: card branco, pílula creme no item ativo, ícone ativo em petróleo */
-    --sidebar: #ffffff;
-    --sidebar-foreground: #12161c;
-    --sidebar-primary: #1f6f6b;
-    --sidebar-primary-foreground: #f4f1ea;
-    --sidebar-accent: #f4f1ea;
-    --sidebar-accent-foreground: #12161c;
-    --sidebar-border: #e7e2d6;
-    --sidebar-ring: #1f6f6b;
+    /* sidebar flutuante escura (noite da marca), contraste forte com o conteúdo branco.
+       Hover: brilho claro suave (fundo + contorno fino); ativo: um pouco mais aceso, ícone turquesa. */
+    --sidebar: #12161c;
+    --sidebar-foreground: #f4f1ea;
+    --sidebar-primary: #3fb8af; /* turquesa sobre noite: 7,5:1 */
+    --sidebar-primary-foreground: #12161c;
+    --sidebar-accent: rgb(244 241 234 / 0.12); /* item ativo */
+    --sidebar-accent-foreground: #f4f1ea;
+    --sidebar-hover: rgb(244 241 234 / 0.07); /* brilho do hover */
+    --sidebar-hover-borda: rgb(244 241 234 / 0.1);
+    --sidebar-border: #232a33;
+    --sidebar-ring: #3fb8af;
 }
 
 /* ARGOS — tema escuro: fundo noite da marca, superfícies em grafite azulado, turquesa como cor de ação. */
@@ -242,13 +247,15 @@
     --sombra-card: 0 0 0 transparent; /* no escuro a borda separa; sem sombra */
     --sombra-card-hover: 0 8px 24px -8px rgb(0 0 0 / 0.5);
     --sombra-destaque: 0 4px 14px -4px rgb(0 0 0 / 0.5);
-    --sidebar: #1a1f27;
+    --sidebar: #0d1015;
     --sidebar-foreground: #f4f1ea;
     --sidebar-primary: #3fb8af;
     --sidebar-primary-foreground: #12161c;
-    --sidebar-accent: #232a33;
+    --sidebar-accent: rgb(244 241 234 / 0.1);
     --sidebar-accent-foreground: #f4f1ea;
-    --sidebar-border: rgb(244 241 234 / 0.1);
+    --sidebar-hover: rgb(244 241 234 / 0.06);
+    --sidebar-hover-borda: rgb(244 241 234 / 0.09);
+    --sidebar-border: rgb(244 241 234 / 0.08);
     --sidebar-ring: #3fb8af;
 }
 

@@ -10,7 +10,6 @@ import type { Papel } from '@/types/database'
 import { ROTULO_PAPEL } from '@/features/admin/papeis'
 import { FormTrocarSenha } from '@/auth/FormTrocarSenha'
 import { ArgosMarca } from '@/components/ArgosMarca'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -45,6 +44,9 @@ import { BuscaTelas } from './BuscaTelas'
 // item ativo: pílula creme, texto forte e ícone em petróleo
 const ITEM_ATIVO = 'data-active:font-medium data-active:[&>svg]:text-sidebar-primary'
 const ICONE_SUAVE = '[&>svg]:text-sidebar-foreground/65'
+// hover: brilho claro suave (fundo levemente aceso + contorno fino claro) para ir destacando a linha
+const BRILHO =
+  'transition-[background-color,box-shadow] duration-150 hover:bg-sidebar-hover hover:shadow-[inset_0_0_0_1px_var(--sidebar-hover-borda)] data-active:hover:bg-sidebar-accent'
 
 function iniciais(texto: string) {
   return texto
@@ -85,7 +87,7 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
           render={<NavLink to={`/${modulo.id}/${modulo.telaInicial}`} />}
           isActive={moduloAtivo}
           tooltip={modulo.titulo}
-          className={ITEM_ATIVO}
+          className={`${BRILHO} ${ITEM_ATIVO}`}
         >
           <modulo.icone />
           <span>{modulo.titulo}</span>
@@ -96,7 +98,7 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
 
   return (
     <Collapsible open={aberto} onOpenChange={setAberto} render={<SidebarMenuItem />}>
-      <CollapsibleTrigger render={<SidebarMenuButton className={ICONE_SUAVE} title={modulo.subtitulo} />}>
+      <CollapsibleTrigger render={<SidebarMenuButton className={`${BRILHO} ${ICONE_SUAVE}`} title={modulo.subtitulo} />}>
         <modulo.icone />
         <span className="flex-1 truncate">{modulo.titulo}</span>
         <ChevronDown className="ml-auto -rotate-90 opacity-60 transition-transform duration-200 in-data-panel-open:rotate-0" />
@@ -110,7 +112,7 @@ function ItemModulo({ modulo, papel }: { modulo: Modulo; papel: Papel | null }) 
                 <SidebarMenuSubButton
                   render={<NavLink to={rota} />}
                   isActive={rotaAtiva(pathname, rota)}
-                  className={`h-8 ${ICONE_SUAVE} ${ITEM_ATIVO}`}
+                  className={`h-8 ${BRILHO} ${ICONE_SUAVE} ${ITEM_ATIVO}`}
                 >
                   <tela.icone />
                   <span>{tela.titulo}</span>
@@ -139,7 +141,7 @@ function ItensSistema({ papel }: { papel: Papel | null }) {
             render={<NavLink to={rota} />}
             isActive={rotaAtiva(pathname, rota)}
             tooltip={tela.titulo}
-            className={`${ICONE_SUAVE} ${ITEM_ATIVO}`}
+            className={`${BRILHO} ${ICONE_SUAVE} ${ITEM_ATIVO}`}
           >
             <tela.icone />
             <span>{tela.titulo}</span>
@@ -181,7 +183,7 @@ export function AppSidebar() {
           <Tooltip>
             <TooltipTrigger
               render={
-                <button type="button" onClick={toggleSidebar} aria-label="Expandir menu" className="rounded-md p-0.5 hover:bg-sidebar-accent" />
+                <button type="button" onClick={toggleSidebar} aria-label="Expandir menu" className={`rounded-md p-0.5 ${BRILHO}`} />
               }
             >
               <ArgosMarca compacta className="[&>img]:size-8" />
@@ -191,9 +193,14 @@ export function AppSidebar() {
         ) : (
           <div className="flex items-center justify-between gap-2">
             <ArgosMarca />
-            <Button variant="ghost" size="icon" className="size-8 text-sidebar-foreground/65" onClick={toggleSidebar} aria-label="Recolher menu">
-              <PanelLeftClose />
-            </Button>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label="Recolher menu"
+              className={`flex size-8 items-center justify-center rounded-md text-sidebar-foreground/65 hover:text-sidebar-foreground ${BRILHO}`}
+            >
+              <PanelLeftClose className="size-4" />
+            </button>
           </div>
         )}
 
@@ -206,7 +213,7 @@ export function AppSidebar() {
                   type="button"
                   onClick={() => setBuscando(true)}
                   aria-label="Buscar tela"
-                  className="flex size-8 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/65 hover:bg-sidebar-accent"
+                  className={`flex size-8 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/65 ${BRILHO}`}
                 />
               }
             >
@@ -218,7 +225,7 @@ export function AppSidebar() {
           <button
             type="button"
             onClick={() => setBuscando(true)}
-            className="flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border px-2.5 text-sm text-sidebar-foreground/60 transition-colors hover:border-sidebar-ring/40 hover:text-sidebar-foreground"
+            className={`flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border px-2.5 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground ${BRILHO}`}
           >
             <Search className="size-4" />
             <span className="flex-1 text-left">Buscar</span>
@@ -250,7 +257,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     size="lg"
                     tooltip={exibicao}
-                    className="rounded-lg border border-sidebar-border px-2 data-popup-open:bg-sidebar-accent group-data-[collapsible=icon]:border-0"
+                    className={`rounded-lg border border-sidebar-border px-2 data-popup-open:bg-sidebar-accent group-data-[collapsible=icon]:border-0 ${BRILHO}`}
                   />
                 }
               >
