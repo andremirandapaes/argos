@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AgGridReact } from 'ag-grid-react'
 import type { ColDef, ColGroupDef, GridApi } from 'ag-grid-community'
-import { Search } from 'lucide-react'
-import { temaArgos } from '@/lib/aggrid'
+import { Download, Loader2, Search } from 'lucide-react'
+import { toast } from 'sonner'
+import { linhasExibidas, temaArgos } from '@/lib/aggrid'
+import { exportarExcel, type ColunaExcel } from '@/lib/exportar-excel'
+import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -97,6 +100,7 @@ export function TabelaCargosYoY({
   ultimo,
   comps,
   semCentro,
+  filtrosTexto,
 }: {
   filtradas: readonly Linha[]
   /** linhas antes do filtro de centro de custo (base para saber se o mês está completo) */
@@ -106,6 +110,8 @@ export function TabelaCargosYoY({
   ultimo: string | undefined
   comps: string[]
   semCentro: Set<string>
+  /** filtros da aba em texto, para o topo da planilha exportada */
+  filtrosTexto: string
 }) {
   const [verPor, setVerPor] = useState<VerPor>('cargo')
   const [busca, setBusca] = useState('')
@@ -257,6 +263,45 @@ export function TabelaCargosYoY({
     ]
   }, [meses, mes, ano, anoAnt, verPor])
 
+  // exporta o que está na tela: busca, ordem e Cargo/Família (Terceirizados no fim, Total por último)
+  const [exportando, setExportando] = useState(false)
+  async function exportar() {
+    if (!api.current) return
+    setExportando(true)
+    try {
+      const numero = (c: unknown) => {
+        if (c === '' || c == null) return null
+        return typeof c === 'number' ? c : (c as { v: number }).v
+      }
+      const texto = (c: unknown) => (c === null ? '—' : numero(c))
+      const colunasExcel: ColunaExcel<LinhaGrade>[] = [
+        { titulo: verPor === 'familia' ? 'Família de cargo' : 'Cargo', valor: (l) => l.label, formato: 'texto' },
+        ...meses.flatMap((m): ColunaExcel<LinhaGrade>[] => [
+          { titulo: rotuloMes(anoAnterior(m)), valor: (l) => texto(l[`${m}|a`]), formato: 'inteiro', largura: 9 },
+          { titulo: rotuloMes(m), valor: (l) => texto(l[`${m}|b`]), formato: 'inteiro', largura: 9 },
+          { titulo: 'Δ', valor: (l) => numero(l[`${m}|d`]), formato: 'inteiro', largura: 7 },
+        ]),
+      ]
+      await exportarExcel({
+        arquivo: `Headcount_Cargos_${anoAnt}x${ano}${verPor === 'familia' ? '_familias' : ''}.xlsx`,
+        aba: `Cargos ${anoAnt} x ${ano}`,
+        titulo: [
+          `Headcount: ${verPor === 'familia' ? 'famílias de cargo' : 'cargos'} mês a mês, ${anoAnt} × ${ano}`,
+          filtrosTexto + (busca.trim() ? ` · Busca: "${busca.trim()}"` : ''),
+          '— = mês sem base ou sem detalhamento por cargo. Valores parciais (* na tela) vão como número.',
+        ],
+        grupos: [{ titulo: '', colunas: 1 }, ...meses.map((m) => ({ titulo: rotuloMes(m).slice(0, 3), colunas: 3 }))],
+        colunas: colunasExcel,
+        linhas: [...linhasExibidas(api.current), ...rodape.filter((l) => l.tipo !== 'total')],
+        total: rodape.find((l) => l.tipo === 'total'),
+      })
+    } catch (e) {
+      toast.error('Não foi possível exportar: ' + (e as Error).message)
+    } finally {
+      setExportando(false)
+    }
+  }
+
   // abre a tabela já no mês de referência
   const api = useRef<GridApi<LinhaGrade> | null>(null)
   useEffect(() => {
@@ -286,12 +331,18 @@ export function TabelaCargosYoY({
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <InputGroup className="h-9 w-full sm:w-72">
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar cargo… (ex.: promotor)" aria-label="Buscar cargo" />
-        </InputGroup>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <InputGroup className="h-9 w-full sm:w-72">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar cargo… (ex.: promotor)" aria-label="Buscar cargo" />
+          </InputGroup>
+          <Button variant="outline" size="sm" onClick={exportar} disabled={exportando || linhas.length + rodape.length === 0}>
+            {exportando ? <Loader2 className="animate-spin" /> : <Download />}
+            Exportar Excel
+          </Button>
+        </div>
         {linhas.length === 0 && rodape.length <= 1 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">Sem cargos para os filtros escolhidos.</p>
         ) : (

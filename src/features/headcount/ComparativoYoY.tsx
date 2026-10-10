@@ -157,6 +157,14 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     return { semCentro, foraDoFiltro }
   }, [escopo, centrosValidos, vinculo])
 
+  // filtros em texto (topo da planilha exportada)
+  const filtrosTexto = [
+    `Área: ${area}`,
+    `Filial: ${ufs.length ? ufs.join(' e ') : 'AM e RR'}`,
+    `Centro de custo: ${centrosValidos.length ? centrosValidos.map((c) => { const o = opcoesCentro.find((x) => x.value === c); return o?.grupo && o.grupo !== o.label ? `${o.grupo} ${o.label}` : (o?.label ?? c) }).join(', ') : 'Todos'}`,
+    `Vínculo: ${vinculo === 'Ambos' ? 'CLT e Terceirizado' : vinculo}`,
+  ].join(' · ')
+
   const total = useMemo(
     () => (mes ? comparar(filtradas, vinculo, mes, ultimoGeral, escopo, semCentro) : null),
     [filtradas, vinculo, mes, ultimoGeral, escopo, semCentro],
@@ -551,7 +559,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
         </CardContent>
       </Card>
 
-      <TabelaCargosYoY filtradas={filtradas} escopo={escopo} vinculo={vinculo} mes={mes} ultimo={ultimoGeral} comps={comps} semCentro={semCentro} />
+      <TabelaCargosYoY filtradas={filtradas} escopo={escopo} vinculo={vinculo} mes={mes} ultimo={ultimoGeral} comps={comps} semCentro={semCentro} filtrosTexto={filtrosTexto} />
 
       {mes && [anoAnterior(mes), mes].some((c) => foraDoFiltro.has(c)) && (
         <p className="flex items-start gap-1.5 text-xs text-alerta-foreground">
