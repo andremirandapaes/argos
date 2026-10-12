@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { ChevronDown, ChevronsUpDown, KeyRound, LogOut, PanelLeftClose, Search } from 'lucide-react'
+import { ChevronDown, ChevronsUpDown, KeyRound, LogOut, PanelLeftClose, Pin, Search } from 'lucide-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { useSessao } from '@/auth/sessao-context'
@@ -152,11 +152,80 @@ function ItensSistema({ papel }: { papel: Papel | null }) {
   )
 }
 
+/** Topo: logo + recolher/fixar e busca. Fica dentro da Sidebar para ler o estado dela (inclusive aberta pelo mouse). */
+function Cabecalho({ onBuscar }: { onBuscar: () => void }) {
+  const { state, isMobile, toggleSidebar, espiando } = useSidebar()
+  const recolhida = state === 'collapsed' && !isMobile
+  return (
+    <SidebarHeader className="gap-3 p-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-1.5">
+      {recolhida ? (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button type="button" onClick={toggleSidebar} aria-label="Expandir menu" className={`rounded-md p-0.5 ${BRILHO}`} />
+            }
+          >
+            <ArgosMarca compacta className="[&>img]:size-8" />
+          </TooltipTrigger>
+          <TooltipContent side="right">Expandir menu</TooltipContent>
+        </Tooltip>
+      ) : (
+        <div className="flex items-center justify-between gap-2">
+          <ArgosMarca />
+          {/* aberta só pelo mouse: o botão fixa aberta; aberta de verdade: o botão recolhe */}
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label={espiando ? 'Manter menu aberto' : 'Recolher menu'}
+                  className={`flex size-8 items-center justify-center rounded-md text-sidebar-foreground/65 hover:text-sidebar-foreground ${BRILHO}`}
+                />
+              }
+            >
+              {espiando ? <Pin className="size-4" /> : <PanelLeftClose className="size-4" />}
+            </TooltipTrigger>
+            <TooltipContent side="right">{espiando ? 'Manter menu aberto' : 'Recolher menu'}</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
+      {/* busca de telas */}
+      {recolhida ? (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                type="button"
+                onClick={() => onBuscar()}
+                aria-label="Buscar tela"
+                className={`flex size-8 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/65 ${BRILHO}`}
+              />
+            }
+          >
+            <Search className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent side="right">Buscar tela (Ctrl+K)</TooltipContent>
+        </Tooltip>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onBuscar()}
+          className={`flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border px-2.5 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground ${BRILHO}`}
+        >
+          <Search className="size-4" />
+          <span className="flex-1 text-left">Buscar</span>
+          <kbd className="rounded border border-sidebar-border px-1.5 py-px font-sans text-[11px] text-sidebar-foreground/60">Ctrl K</kbd>
+        </button>
+      )}
+    </SidebarHeader>
+  )
+}
+
 export function AppSidebar() {
   const { sessao } = useSessao()
   const { papel, nome } = usePerfil()
-  const { state, isMobile, toggleSidebar } = useSidebar()
-  const recolhida = state === 'collapsed' && !isMobile
   const email = sessao?.user.email ?? ''
   const exibicao = nome || email
   const [trocandoSenha, setTrocandoSenha] = useState(false)
@@ -177,62 +246,8 @@ export function AppSidebar() {
   const modulos = MODULOS.filter((m) => m.area === 'modulo' && telasVisiveis(m, papel).length > 0)
 
   return (
-    <Sidebar variant="floating" collapsible="icon">
-      <SidebarHeader className="gap-3 p-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-1.5">
-        {recolhida ? (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button type="button" onClick={toggleSidebar} aria-label="Expandir menu" className={`rounded-md p-0.5 ${BRILHO}`} />
-              }
-            >
-              <ArgosMarca compacta className="[&>img]:size-8" />
-            </TooltipTrigger>
-            <TooltipContent side="right">Expandir menu</TooltipContent>
-          </Tooltip>
-        ) : (
-          <div className="flex items-center justify-between gap-2">
-            <ArgosMarca />
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label="Recolher menu"
-              className={`flex size-8 items-center justify-center rounded-md text-sidebar-foreground/65 hover:text-sidebar-foreground ${BRILHO}`}
-            >
-              <PanelLeftClose className="size-4" />
-            </button>
-          </div>
-        )}
-
-        {/* busca de telas */}
-        {recolhida ? (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <button
-                  type="button"
-                  onClick={() => setBuscando(true)}
-                  aria-label="Buscar tela"
-                  className={`flex size-8 items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/65 ${BRILHO}`}
-                />
-              }
-            >
-              <Search className="size-4" />
-            </TooltipTrigger>
-            <TooltipContent side="right">Buscar tela (Ctrl+K)</TooltipContent>
-          </Tooltip>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setBuscando(true)}
-            className={`flex h-9 w-full items-center gap-2 rounded-md border border-sidebar-border px-2.5 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground ${BRILHO}`}
-          >
-            <Search className="size-4" />
-            <span className="flex-1 text-left">Buscar</span>
-            <kbd className="rounded border border-sidebar-border px-1.5 py-px font-sans text-[11px] text-sidebar-foreground/60">Ctrl K</kbd>
-          </button>
-        )}
-      </SidebarHeader>
+    <Sidebar variant="floating" collapsible="icon" abrirAoPassar>
+      <Cabecalho onBuscar={() => setBuscando(true)} />
 
       <SidebarContent>
         <SidebarGroup className="pt-1">
