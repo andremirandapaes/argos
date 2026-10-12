@@ -188,6 +188,25 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
     [filtradas, vinculo, mes, ultimoGeral, area, escopo, semCentro],
   )
 
+  // com uma área só, o card da área repetiria o destaque: no lugar, quantitativo por filial (a filial escolhida, ou AM e RR)
+  const porFilial = useMemo(
+    () =>
+      mes && porArea.length <= 1
+        ? UFS.filter((u) => (ufs.length ? ufs.includes(u) : escopo.some((l) => l[1] === u))).map((u) => ({
+            uf: u,
+            ...comparar(
+              filtradas.filter((l) => l[1] === u),
+              vinculo,
+              mes,
+              ultimoGeral,
+              escopo.filter((l) => l[1] === u),
+              semCentro,
+            ),
+          }))
+        : [],
+    [mes, porArea.length, ufs, escopo, filtradas, vinculo, ultimoGeral, semCentro],
+  )
+
   // mês a mês: ano de referência × ano anterior (Jan–Dez)
   const grafico = useMemo(() => {
     if (!mes) return null
@@ -402,7 +421,41 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
             )}
           </div>
         </div>
-        <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-3 xl:col-span-3', porArea.length === 1 && 'sm:grid-cols-1')}>
+        {porFilial.length > 0 ? (
+          <div className="relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-card p-4 pl-5 shadow-card xl:col-span-3">
+            <span aria-hidden className="absolute inset-y-0 left-0 w-1" style={{ background: porArea[0] ? COR_AREA[porArea[0].area] : 'var(--primary)' }} />
+            <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Quantitativo por filial{porArea[0] ? ` · ${porArea[0].area}` : ''}
+            </span>
+            <div className="flex flex-col divide-y">
+              {porFilial.map((f) => {
+                const d = f.antes != null && f.agora != null ? f.agora - f.antes : null
+                return (
+                  <div key={f.uf} className="flex flex-wrap items-center gap-x-6 gap-y-1 py-2.5 first:pt-0 last:pb-0">
+                    <span className="w-36 text-sm font-medium">{ROTULO_UF[f.uf]}</span>
+                    <div className="flex items-baseline gap-2 tabular-nums">
+                      <span className="text-xs text-muted-foreground">{rotuloMes(anterior)}</span>
+                      <span className="text-sm text-muted-foreground">{fmtPessoas(f.antes)}</span>
+                      <ArrowRight className="size-3.5 self-center text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{rotuloMes(mes)}</span>
+                      <span className="text-xl leading-tight font-semibold">{fmtPessoas(f.agora)}</span>
+                    </div>
+                    <div className="ml-auto">
+                      {d != null ? (
+                        <Variacao dif={d} base={f.antes} />
+                      ) : (
+                        <span className="text-xs text-alerta-foreground" title={f.faltas.join('\n')}>
+                          Base incompleta
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 xl:col-span-3">
           {porArea.map((a) => {
             const d = a.antes != null && a.agora != null ? a.agora - a.antes : null
             return (
@@ -427,6 +480,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
             )
           })}
         </div>
+        )}
       </section>
 
       {/* mês a mês */}

@@ -59,7 +59,7 @@ setTimeout(() => {
   if (params.get('filtros')) [...document.querySelectorAll('button')].find((b) => b.textContent?.includes('Mais filtros'))?.click()
   if (params.get('centros')) setTimeout(() => { [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label')?.startsWith('Centro de custo'))?.click(); setTimeout(() => [...document.querySelectorAll('[role=menu] *')].find((e) => e.textContent === 'Elo Norte')?.dispatchEvent(new MouseEvent('click', { bubbles: true })), 400) }, 400)
   const filial = params.get('filial')
-  if (filial) [...document.querySelectorAll('[aria-label^="Filial"] button')].find((b) => b.textContent === filial)?.click()
+  if (filial) setTimeout(() => [...document.querySelectorAll('[aria-label^="Filial"] button')].find((b) => b.textContent === filial)?.click(), 300)
   const agrupar = params.get('agrupar')
   setTimeout(() => {
     if (agrupar) [...document.querySelectorAll('[role=tab]')].find((b) => b.textContent === agrupar)?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -72,6 +72,9 @@ setTimeout(() => {
   // ?voltar=1: clica de novo no mesmo cargo (deve voltar a contar)
   if (tirar && params.get('voltar')) setTimeout(() => [...document.querySelectorAll('button.hc-nome-cargo')].find((b) => b.textContent === tirar)?.click(), 2800)
   if (params.get('terc')) setTimeout(() => [...document.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Terceirizados')?.click(), 900)
+  // ?area=Logística: escolhe a área no Comparativo YoY
+  const areaYoY = params.get('area')
+  if (areaYoY) setTimeout(() => [...document.querySelectorAll('[aria-label="Área"] button')].find((b) => b.textContent === areaYoY)?.click(), 300)
   // ?busca=promotor: digita na busca de cargo do Comparativo YoY
   const busca = params.get('busca')
   if (busca)
