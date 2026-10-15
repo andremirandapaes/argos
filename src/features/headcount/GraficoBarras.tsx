@@ -67,7 +67,11 @@ export function GraficoBarras({
   return (
     <div className="flex flex-col gap-3">
       <ChartContainer config={config} className="aspect-auto h-72 w-full">
+        {/* O Recharts desenha as barras na ordem em que entram no gráfico: ao trocar filtros, uma série que já
+            estava ficaria na frente das novas. A key recria o gráfico quando as séries mudam, e as barras
+            seguem a ordem da legenda (ordem oficial das distribuidoras). */}
         <BarChart
+          key={series.map((s) => s.nome).join('|')}
           data={pontos}
           margin={{ top: mostrarRotulos ? 24 : 12, right: 8, left: 8, bottom: 0 }}
           barCategoryGap={varias ? '18%' : '30%'}

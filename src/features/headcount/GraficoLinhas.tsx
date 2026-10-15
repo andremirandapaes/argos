@@ -83,7 +83,9 @@ export function GraficoLinhas({
   return (
     <div className="flex flex-col gap-3">
       <ChartContainer config={config} className={`aspect-auto w-full ${altura}`}>
+        {/* recria o gráfico quando as séries mudam: a ordem de desenho segue a da legenda (ver GraficoBarras) */}
         <LineChart
+          key={series.map((s) => s.nome).join('|')}
           data={pontos}
           margin={compacto ? { top: mostrarRotulos ? 20 : 8, right: 12, left: 12, bottom: 0 } : { top: mostrarRotulos ? 24 : 12, right: 16, left: 16, bottom: 0 }}
         >
