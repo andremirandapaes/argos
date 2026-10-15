@@ -51,7 +51,7 @@ export function VisaoGeral({ linhas, comps }: { linhas: readonly Linha[]; comps:
   const de = doAno[0]
   const ate = doAno.at(-1)!
   const [maisFiltros, setMaisFiltros] = useState(false)
-  const [rotulos, setRotulos] = useState(false)
+  const [rotulos, setRotulos] = useState(true)
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_VAZIOS)
   const [vinculo, setVinculo] = useState<FiltroVinculo>('Ambos')
   const [agrupar, setAgrupar] = useState<'area' | 'estado' | 'area-estado'>('area-estado')

@@ -79,7 +79,7 @@ export function VisaoArea({ area, linhas, comps }: { area: Area; linhas: readonl
   const compsArea = useMemo(() => competencias(daArea), [daArea])
   // ano: null = o mais recente da área
   const [ano, setAno] = useState<string | null>(null)
-  const [rotulos, setRotulos] = useState(false)
+  const [rotulos, setRotulos] = useState(true)
   const [ufs, setUfs] = useState<string[]>([])
   const [centros, setCentros] = useState<string[]>([])
   const [vinculo, setVinculo] = useState<FiltroVinculo>('Ambos')

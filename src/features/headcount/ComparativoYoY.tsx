@@ -100,7 +100,7 @@ export function ComparativoYoY({ linhas, comps }: { linhas: readonly Linha[]; co
   const [vinculo, setVinculo] = useState<FiltroVinculo>('Ambos')
   const [agrupar, setAgrupar] = useState<Agrupar>('area-filial')
   const [verTodos, setVerTodos] = useState(false)
-  const [rotulos, setRotulos] = useState(false)
+  const [rotulos, setRotulos] = useState(true)
 
   const [centros, setCentros] = useState<string[]>([])
 

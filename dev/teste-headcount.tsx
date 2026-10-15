@@ -1,5 +1,5 @@
 // Vitrine de desenvolvimento do painel HeadCount com a base migrada do artefato (sem banco).
-// Abrir em http://localhost:5173/dev/teste-headcount.html   (?tema=escuro · ?aba=Comercial|Logística|Backoffice · ?sobre=1 · ?filtros=1 · ?centros=1 · ?filial=RR · ?agrupar=Distribuidora · ?rotulos=1 · ?macro=Promotores · ?fora=<cargo> · ?terc=1 · ?busca=promotor)
+// Abrir em http://localhost:5173/dev/teste-headcount.html   (?tema=escuro · ?aba=Comercial|Logística|Backoffice · ?sobre=1 · ?filtros=1 · ?centros=1 · ?filial=RR · ?agrupar=Distribuidora · ?rotulos=1 (desliga os rótulos, que já vêm ligados) · ?macro=Promotores · ?fora=<cargo> · ?terc=1 · ?busca=promotor)
 // A consolidação abaixo repete a regra da view vw_headcount_linhas (sem terceirizados lançados).
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
