@@ -46,9 +46,8 @@ export function useAtualizarDepartamento() {
       if (error) throw error
     },
     onSuccess: () => {
-      // exclusivo muda o PROFESSIONAL; código aparece em todos os relatórios
+      // exclusivo muda o toggle Só Professional do Gerencial (mesmas chaves); código aparece em todos os relatórios
       invalidarFaturamento(queryClient)
-      queryClient.invalidateQueries({ queryKey: ['vw_professional'] })
     },
   })
 }
@@ -67,7 +66,6 @@ export function useAplicarCodigos() {
     },
     onSettled: () => {
       invalidarFaturamento(queryClient)
-      queryClient.invalidateQueries({ queryKey: ['vw_professional'] })
     },
   })
 }

@@ -11,7 +11,6 @@ import {
   History,
   LayoutDashboard,
   Receipt,
-  Star,
   Tags,
   UsersRound,
   Users,
@@ -25,7 +24,6 @@ import {
   GerencialPage,
   HistoricoPage,
   ImportarPage,
-  ProfessionalPage,
 } from '@/features/dun-pro/paginas'
 import { UsuariosPage } from '@/features/admin/paginas'
 import { AtualizarBasesPage, PainelHeadcountPage } from '@/features/headcount/paginas'
@@ -68,7 +66,6 @@ export const MODULOS: Modulo[] = [
       { caminho: 'gerencial', titulo: 'Relatório Gerencial', icone: LayoutDashboard, papelMinimo: 'leitor', elemento: <GerencialPage /> },
       { caminho: 'despesas', titulo: 'Despesas', icone: Receipt, papelMinimo: 'leitor', elemento: <DespesasPage /> },
       { caminho: 'evolucao', titulo: 'Evolução', icone: BarChart3, papelMinimo: 'leitor', elemento: <EvolucaoPage /> },
-      { caminho: 'professional', titulo: 'Professional Dpts', icone: Star, papelMinimo: 'leitor', elemento: <ProfessionalPage /> },
       { caminho: 'historico', titulo: 'Histórico de cargas', icone: History, papelMinimo: 'leitor', elemento: <HistoricoPage /> },
       { caminho: 'departamentos', titulo: 'Departamentos', icone: Tags, papelMinimo: 'leitor', elemento: <DepartamentosPage /> },
     ],

@@ -1,5 +1,6 @@
-// Vitrine de desenvolvimento da Evolução e do PROFESSIONAL com os dados do seed (dev/dados-demo-2026.json).
-// Abrir em http://localhost:5173/dev/teste-etapa6.html?tela=evolucao  (ou ?tela=professional; &tema=escuro; &rotulos=1)
+// Vitrine de desenvolvimento da Evolução com os dados do seed (dev/dados-demo-2026.json).
+// Abrir em http://localhost:5173/dev/teste-etapa6.html  (&tema=escuro; &rotulos=1; &arrastar=2,4)
+// (a tela Professional Dpts saiu em 2026-10-21: virou o toggle "Só Professional" do Relatório Gerencial)
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -8,7 +9,6 @@ import '@/index.css'
 import { SessaoContext } from '@/auth/sessao-context'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import EvolucaoPage from '@/features/dun-pro/evolucao/EvolucaoPage'
-import ProfessionalPage from '@/features/dun-pro/professional/ProfessionalPage'
 import dados from './dados-demo-2026.json'
 
 const params = new URLSearchParams(location.search)
@@ -21,20 +21,8 @@ qc.setQueryData(['perfil', 'u1'], { papel: 'admin', nome: 'Nic' })
 qc.setQueryData(['distribuidora', 'dun-professional'], { id: D, nome: 'DUN PROFESSIONAL' })
 qc.setQueryData(['vw_gerencial_mensal_total', D, false], dados.totais)
 qc.setQueryData(['vw_gerencial_anual', D, 2026, false], { linhas: dados.anual, total: dados.anualTotal })
-qc.setQueryData(['departamentos', 'exclusivos', D], dados.professional.exclusivos)
-qc.setQueryData(['vw_professional', D, { visao: 'mensal', mesRef: '2026-08-01' }], {
-  linhas: dados.professional.linhasAgo,
-  total: dados.professional.totalAgo,
-})
 
 qc.setQueryData(['resumo_gerencial', 'dun-professional', '2026-03-01', '2026-05-01'], dados.resumoMarMai)
-// PROFESSIONAL — aba Acompanhamento (ano 2026)
-qc.setQueryData(['vw_professional', 'mensal-ano', D, 2026], dados.professional.mensalAno)
-qc.setQueryData(['vw_professional', 'totais-ano', D, 2026], dados.professional.totaisAno)
-qc.setQueryData(['vw_professional', D, { visao: 'anual', ano: 2026 }], {
-  linhas: dados.professional.anualLinhas,
-  total: dados.professional.anualTotal,
-})
 
 // ?arrastar=2,4 → simula arrastar da barra de índice 2 (Mar) à 4 (Mai) no gráfico de faturamento
 const arrastar = params.get('arrastar')
@@ -54,7 +42,6 @@ if (arrastar) {
 }
 
 const sessao = { user: { id: 'u1', email: 'nic@demo' } } as unknown as Session
-const Tela = params.get('tela') === 'professional' ? ProfessionalPage : EvolucaoPage
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={qc}>
@@ -62,7 +49,7 @@ createRoot(document.getElementById('root')!).render(
       <TooltipProvider>
         <MemoryRouter initialEntries={[params.get('aba') ? `/?aba=${params.get('aba')}` : '/']}>
           <div className="flex min-h-svh flex-col bg-background">
-            <Tela />
+            <EvolucaoPage />
           </div>
         </MemoryRouter>
       </TooltipProvider>
