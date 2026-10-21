@@ -14,6 +14,14 @@ import {
   type Medida,
 } from './acompanhamento-tabela'
 
+/** Altura máxima da tabela (com mais linhas, rola). */
+const ALTURA_MAXIMA = 'max(460px, calc(100svh - 25rem))'
+/**
+ * Cabeçalho em duas linhas (meses + medidas, 38px cada) + linhas de 36px + TOTAL fixo + barra de rolagem
+ * horizontal (muitos meses) + bordas; pelo menos 3 linhas, para a mensagem de vazio.
+ */
+const alturaDaGrade = (linhas: number) => 2 * 38 + Math.max(linhas, 3) * 36 + 36 + 16 + 4
+
 /**
  * Tabela da aba Acompanhamento (genérica): meses lado a lado + Acumulado, busca e exportação.
  * Exporta o que está na tela (busca + ordenação); com busca, o total vira "TOTAL GERAL"
@@ -77,7 +85,7 @@ export function TabelaAcompanhamento({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-card">
+    <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card shadow-card">
       <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5">
         <div className="text-sm font-medium">
           {titulo}
@@ -96,7 +104,8 @@ export function TabelaAcompanhamento({
           </Button>
         </div>
       </div>
-      <div className="h-[max(460px,calc(100svh-25rem))]">
+      {/* altura: acompanha as linhas (TOTAL logo abaixo do último departamento), até o máximo da tela */}
+      <div style={{ height: carregando ? ALTURA_MAXIMA : `min(${ALTURA_MAXIMA}, ${alturaDaGrade(visiveis ?? linhas.length)}px)` }}>
         <AgGridReact<LinhaAcompanhamento>
           ref={gridRef}
           theme={temaArgos}

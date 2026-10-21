@@ -31,6 +31,11 @@ import { COLUNAS, COLUNAS_EXCEL, linhaTotal, type LinhaTabela, type Totais } fro
 import { SeletorPeriodo, type Visao } from './SeletorPeriodo'
 
 const ROTA_DESPESAS = '/dun-professional/despesas'
+
+/** Altura máxima da tabela (com mais linhas, rola). */
+const ALTURA_MAXIMA = 'max(420px, calc(100svh - 25rem))'
+/** Cabeçalho 38px + linhas de 36px + TOTAL fixo + bordas (pelo menos 3 linhas, para a mensagem de vazio). */
+const alturaDaGrade = (linhas: number) => 38 + Math.max(linhas, 3) * 36 + 36 + 4
 const ROTA_IMPORTAR = '/dun-professional/importar'
 
 /** A view trimestral vem de uma migration à parte; se ainda não foi aplicada, o PostgREST não a encontra. */
@@ -347,7 +352,7 @@ export default function GerencialPage() {
 
       {/* tabela */}
       {!semCargaNoMes && (
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-card">
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5">
             <div className="text-sm font-medium">
               Por departamento
@@ -365,7 +370,8 @@ export default function GerencialPage() {
               </Button>
             </div>
           </div>
-          <div className="h-[max(420px,calc(100svh-25rem))]">
+          {/* altura: acompanha as linhas (TOTAL logo abaixo do último departamento), até o máximo da tela */}
+          <div style={{ height: carregandoDados ? ALTURA_MAXIMA : `min(${ALTURA_MAXIMA}, ${alturaDaGrade(visiveis ?? linhas.length)}px)` }}>
             <AgGridReact<LinhaTabela>
               ref={gridRef}
               theme={temaArgos}
