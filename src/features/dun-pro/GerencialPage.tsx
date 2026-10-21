@@ -13,12 +13,15 @@ import { rotuloTrimestre, trimestreDe } from '@/lib/periodo'
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   useDistribuidora,
   useGerencialAnual,
   useGerencialMensal,
   useGerencialTrimestral,
   useTotaisMensais,
+  viewProfessionalAusente,
 } from './api'
 import { AcompanhamentoGerencial } from './acompanhamento/AcompanhamentoGerencial'
 import { AbasRelatorio, SeletorAcompanhamento, type Aba, type PeriodoAcomp } from './AbasRelatorio'
@@ -48,6 +51,11 @@ export default function GerencialPage() {
   const totais = useTotaisMensais(distId)
 
   // ---- aba e filtros (guardados na URL para links diretos e para sobreviver ao refresh) ----
+  // Só Professional: só departamentos exclusivos, com a despesa cheia re-rateada entre eles (vale para as duas abas)
+  const professional = params.get('prof') === '1'
+  const totaisProf = useTotaisMensais(distId, true, professional)
+  // meses, períodos e alerta de despesa vêm sempre do total geral; cards e TOTAL, da visão escolhida
+  const totaisVisao = professional ? totaisProf : totais
   const aba: Aba = params.get('aba') === 'acompanhamento' ? 'acompanhamento' : 'padrao'
   const padrao = aba === 'padrao'
   const visaoParam = params.get('visao')
@@ -75,12 +83,12 @@ export default function GerencialPage() {
 
   // ---- dados ----
   // (na aba Acompanhamento as consultas da aba Padrão ficam desligadas)
-  const mensal = useGerencialMensal(distId, padrao && visao === 'mensal' ? mesRef : undefined)
-  const trimestral = useGerencialTrimestral(distId, padrao && visao === 'trimestral' ? ano : undefined, tri)
-  const anual = useGerencialAnual(distId, padrao && visao === 'anual' ? ano : undefined)
+  const mensal = useGerencialMensal(distId, padrao && visao === 'mensal' ? mesRef : undefined, professional)
+  const trimestral = useGerencialTrimestral(distId, padrao && visao === 'trimestral' ? ano : undefined, tri, professional)
+  const anual = useGerencialAnual(distId, padrao && visao === 'anual' ? ano : undefined, professional)
   const consulta = visao === 'mensal' ? mensal : visao === 'trimestral' ? trimestral : anual
 
-  const totalMensal = totais.data?.find((t) => t.mes_ref === mesRef)
+  const totalMensal = totaisVisao.data?.find((t) => t.mes_ref === mesRef)
   const totaisExibidos: Totais | null | undefined =
     visao === 'mensal' ? totalMensal : visao === 'trimestral' ? trimestral.data?.total : anual.data?.total
   const linhas: LinhaTabela[] = useMemo(
@@ -97,9 +105,9 @@ export default function GerencialPage() {
   })
   const mesesSemDespesa = mesesDoPeriodo.filter((t) => t.despesa == null)
 
-  const carregandoBase = distribuidora.isPending || totais.isPending
+  const carregandoBase = distribuidora.isPending || totais.isPending || (professional && totaisProf.isPending)
   const carregandoDados = carregandoBase || consulta.isPending
-  const erro = distribuidora.error ?? totais.error ?? (padrao ? consulta.error : null)
+  const erro = distribuidora.error ?? totais.error ?? (professional ? totaisProf.error : null) ?? (padrao ? consulta.error : null)
   const periodo =
     visao === 'mensal'
       ? formatarMes(mesRef)
@@ -118,12 +126,13 @@ export default function GerencialPage() {
     setExportando(true)
     try {
       await exportarExcel({
-        arquivo: `Relatorio_Gerencial_Duno_Pro_${
+        arquivo: `Relatorio_Gerencial_Duno_Pro_${professional ? 'Professional_' : ''}${
           visao === 'mensal' ? mesRef?.slice(0, 7) : visao === 'trimestral' ? `${ano}-T${tri}` : ano
         }.xlsx`,
         aba: `Gerencial ${periodo.replace('/', '-')}`,
         titulo: [
-          `Relatório Gerencial ${NOME_DUNO_PRO} — ${periodo}`,
+          `Relatório Gerencial ${NOME_DUNO_PRO} — ${periodo}${professional ? ' — Só Professional' : ''}`,
+          ...(professional ? ['Só departamentos Professional; a despesa cheia do período é re-rateada entre eles.'] : []),
           ...(filtro ? [`Filtro: "${filtro}" · ${exibidas.length} de ${linhas.length} departamentos`] : []),
         ],
         colunas: COLUNAS_EXCEL,
@@ -138,6 +147,31 @@ export default function GerencialPage() {
   }
 
   // ---- estados vazios ----
+  if (professional && viewProfessionalAusente(totaisProf.error ?? consulta.error)) {
+    return (
+      <div className="p-6">
+        <Alert className="border-alerta-foreground/25 bg-alerta text-alerta-foreground">
+          <AlertTriangle />
+          <AlertTitle>O filtro Só Professional ainda não foi aplicado no banco</AlertTitle>
+          <AlertDescription className="text-alerta-foreground/85">
+            Rode no SQL Editor do Supabase o arquivo supabase/migrations/20261021000000_argos_gerencial_professional.sql
+            e recarregue a página.
+          </AlertDescription>
+          <AlertAction>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-alerta-foreground/30 bg-transparent"
+              onClick={() => mudarFiltro({ prof: '0' })}
+            >
+              Ver todos os departamentos
+            </Button>
+          </AlertAction>
+        </Alert>
+      </div>
+    )
+  }
+
   if (padrao && visao === 'trimestral' && viewTrimestralAusente(trimestral.error)) {
     return (
       <div className="p-6">
@@ -201,6 +235,11 @@ export default function GerencialPage() {
             <span>
               {NOME_DUNO_PRO} · {padrao ? periodo : `Acompanhamento ${rotuloAcomp}`}
             </span>
+            {professional && (
+              <Badge className="font-normal" title="Só departamentos Professional; a despesa cheia do período é re-rateada entre eles">
+                Só Professional
+              </Badge>
+            )}
             {padrao && visao === 'mensal' && totalMensal && (
               <Badge variant="outline" className="font-normal">
                 Faturamento v{totalMensal.versao_faturamento} · Despesa{' '}
@@ -218,6 +257,13 @@ export default function GerencialPage() {
           </div>
         </div>
 
+        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2" title="Só os departamentos Professional, com a despesa cheia do período re-rateada entre eles">
+          <Switch id="so-professional" checked={professional} onCheckedChange={(v) => mudarFiltro({ prof: v ? '1' : '0' })} />
+          <Label htmlFor="so-professional" className="text-sm font-normal whitespace-nowrap">
+            Só Professional
+          </Label>
+        </div>
         {!padrao ? (
           // aba Acompanhamento: ano ou trimestre (a tabela mostra os meses do período até o último com carga)
           <SeletorAcompanhamento
@@ -242,6 +288,7 @@ export default function GerencialPage() {
             onMudar={mudarFiltro}
           />
         )}
+        </div>
       </div>
 
       <AbasRelatorio aba={aba} onMudar={(a) => mudarFiltro({ aba: a })} />
@@ -253,7 +300,8 @@ export default function GerencialPage() {
             !ano ? undefined : periodoAcomp === 'trimestre' && tri ? { tipo: 'trimestre', ano, tri } : { tipo: 'ano', ano }
           }
           rotuloPeriodo={rotuloAcomp}
-          totaisMensais={totais.data ?? []}
+          totaisMensais={totaisVisao.data ?? []}
+          professional={professional}
         />
       ) : (
       <>

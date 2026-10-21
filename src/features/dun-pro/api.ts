@@ -11,6 +11,19 @@ export type LinhaAnual = View<'vw_gerencial_anual'>
 export type TotalAnual = View<'vw_gerencial_anual_total'>
 
 /**
+ * Toggle "Só Professional" do Relatório Gerencial: as mesmas consultas, nas views
+ * vw_gerencial_professional_* (só departamentos exclusivos; a despesa cheia do período é
+ * re-rateada entre eles). Mesmas colunas, então o resto da tela não muda.
+ */
+const vista = <N extends string>(nome: N, professional: boolean) =>
+  (professional ? nome.replace('vw_gerencial_', 'vw_gerencial_professional_') : nome) as N
+
+/** As views do toggle vêm de uma migration à parte; se ainda não foi aplicada, o PostgREST não as encontra. */
+export function viewProfessionalAusente(erro: { message?: string; code?: string } | null) {
+  return !!erro && (erro.code === 'PGRST205' || erro.code === '42P01') && /vw_gerencial_professional/.test(erro.message ?? '')
+}
+
+/**
  * Recarrega tudo o que depende da versão vigente do faturamento
  * (depois de importar uma base ou trocar a versão vigente).
  */
@@ -50,13 +63,13 @@ export function useDistribuidora() {
  * Totais de todos os meses com carga vigente, em ordem cronológica.
  * Serve para: lista de meses do filtro, mês padrão, linha TOTAL mensal e gráfico de evolução.
  */
-export function useTotaisMensais(distribuidoraId: string | undefined) {
+export function useTotaisMensais(distribuidoraId: string | undefined, professional = false, ligada = true) {
   return useQuery({
-    queryKey: ['vw_gerencial_mensal_total', distribuidoraId],
-    enabled: !!distribuidoraId,
+    queryKey: ['vw_gerencial_mensal_total', distribuidoraId, professional],
+    enabled: !!distribuidoraId && ligada,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('vw_gerencial_mensal_total')
+        .from(vista('vw_gerencial_mensal_total', professional))
         .select('*')
         .eq('distribuidora_id', distribuidoraId!)
         .order('mes_ref')
@@ -67,13 +80,13 @@ export function useTotaisMensais(distribuidoraId: string | undefined) {
 }
 
 /** Linhas por departamento de um mês (mes_ref = "AAAA-MM-01"). */
-export function useGerencialMensal(distribuidoraId: string | undefined, mesRef: string | undefined) {
+export function useGerencialMensal(distribuidoraId: string | undefined, mesRef: string | undefined, professional = false) {
   return useQuery({
-    queryKey: ['vw_gerencial_mensal', distribuidoraId, mesRef],
+    queryKey: ['vw_gerencial_mensal', distribuidoraId, mesRef, professional],
     enabled: !!distribuidoraId && !!mesRef,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('vw_gerencial_mensal')
+        .from(vista('vw_gerencial_mensal', professional))
         .select('*')
         .eq('distribuidora_id', distribuidoraId!)
         .eq('mes_ref', mesRef!)
@@ -120,15 +133,15 @@ const TAMANHO_PAGINA = 1000 // limite padrão de linhas por resposta do Supabase
  * Todas as linhas departamento × mês de um ano (mesma view e mesmo rateio da aba Padrão).
  * Busca em páginas de 1.000 linhas: uma chamada hoje; mais só quando o ano passar desse limite.
  */
-export function useGerencialMensalAno(distribuidoraId: string | undefined, ano: number | undefined) {
+export function useGerencialMensalAno(distribuidoraId: string | undefined, ano: number | undefined, professional = false) {
   return useQuery({
-    queryKey: ['vw_gerencial_mensal', 'ano', distribuidoraId, ano],
+    queryKey: ['vw_gerencial_mensal', 'ano', distribuidoraId, ano, professional],
     enabled: !!distribuidoraId && !!ano,
     queryFn: async () => {
       const todas: LinhaMensalAno[] = []
       for (let inicio = 0; ; inicio += TAMANHO_PAGINA) {
         const { data, error } = await supabase
-          .from('vw_gerencial_mensal')
+          .from(vista('vw_gerencial_mensal', professional))
           .select('departamento_id, mes_ref, faturamento_liquido, rentabilidade, rentabilidade_pct, despesa_rateada, lb, lb_pct')
           .eq('distribuidora_id', distribuidoraId!)
           .gte('mes_ref', `${ano}-01-01`)
@@ -150,20 +163,21 @@ export function useGerencialTrimestral(
   distribuidoraId: string | undefined,
   ano: number | undefined,
   trimestre: number | undefined,
+  professional = false,
 ) {
   return useQuery({
-    queryKey: ['vw_gerencial_trimestral', distribuidoraId, ano, trimestre],
+    queryKey: ['vw_gerencial_trimestral', distribuidoraId, ano, trimestre, professional],
     enabled: !!distribuidoraId && !!ano && !!trimestre,
     queryFn: async () => {
       const [linhas, total] = await Promise.all([
         supabase
-          .from('vw_gerencial_trimestral')
+          .from(vista('vw_gerencial_trimestral', professional))
           .select('*')
           .eq('distribuidora_id', distribuidoraId!)
           .eq('ano', ano!)
           .eq('trimestre', trimestre!),
         supabase
-          .from('vw_gerencial_trimestral_total')
+          .from(vista('vw_gerencial_trimestral_total', professional))
           .select('*')
           .eq('distribuidora_id', distribuidoraId!)
           .eq('ano', ano!)
@@ -178,15 +192,15 @@ export function useGerencialTrimestral(
 }
 
 /** Linhas por departamento do ano + total do ano. */
-export function useGerencialAnual(distribuidoraId: string | undefined, ano: number | undefined) {
+export function useGerencialAnual(distribuidoraId: string | undefined, ano: number | undefined, professional = false) {
   return useQuery({
-    queryKey: ['vw_gerencial_anual', distribuidoraId, ano],
+    queryKey: ['vw_gerencial_anual', distribuidoraId, ano, professional],
     enabled: !!distribuidoraId && !!ano,
     queryFn: async () => {
       const [linhas, total] = await Promise.all([
-        supabase.from('vw_gerencial_anual').select('*').eq('distribuidora_id', distribuidoraId!).eq('ano', ano!),
+        supabase.from(vista('vw_gerencial_anual', professional)).select('*').eq('distribuidora_id', distribuidoraId!).eq('ano', ano!),
         supabase
-          .from('vw_gerencial_anual_total')
+          .from(vista('vw_gerencial_anual_total', professional))
           .select('*')
           .eq('distribuidora_id', distribuidoraId!)
           .eq('ano', ano!)

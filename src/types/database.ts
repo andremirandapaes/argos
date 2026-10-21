@@ -455,6 +455,116 @@ export type Database = {
         }
         Relationships: []
       }
+      // views do toggle Só Professional (migration 20261021000000): mesmas colunas das views do Gerencial
+      vw_gerencial_professional_mensal: {
+        Row: {
+          distribuidora_id: string | null
+          mes_ref: string | null
+          carga_id: string | null
+          versao_faturamento: number | null
+          versao_despesa: number | null
+          departamento_id: string | null
+          codigo_winthor: number | null
+          nome: string | null
+          exclusivo_professional: boolean | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          participacao: number | null
+          despesa_total_mes: number | null
+          rentabilidade_pct: number | null
+          despesa_rateada: number | null
+          lb: number | null
+          lb_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_gerencial_professional_mensal_total: {
+        Row: {
+          distribuidora_id: string | null
+          mes_ref: string | null
+          versao_faturamento: number | null
+          versao_despesa: number | null
+          qtd_departamentos: number | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          rentabilidade_pct: number | null
+          despesa: number | null
+          lb: number | null
+          lb_pct: number | null
+          custo_op_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_gerencial_professional_anual: {
+        Row: {
+          distribuidora_id: string | null
+          ano: number | null
+          departamento_id: string | null
+          codigo_winthor: number | null
+          nome: string | null
+          exclusivo_professional: boolean | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          participacao: number | null
+          despesa_total_ano: number | null
+          rentabilidade_pct: number | null
+          despesa_rateada: number | null
+          lb: number | null
+          lb_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_gerencial_professional_anual_total: {
+        Row: {
+          distribuidora_id: string | null
+          ano: number | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          rentabilidade_pct: number | null
+          despesa: number | null
+          lb: number | null
+          lb_pct: number | null
+          custo_op_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_gerencial_professional_trimestral: {
+        Row: {
+          distribuidora_id: string | null
+          ano: number | null
+          trimestre: number | null
+          departamento_id: string | null
+          codigo_winthor: number | null
+          nome: string | null
+          exclusivo_professional: boolean | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          participacao: number | null
+          despesa_total_trimestre: number | null
+          rentabilidade_pct: number | null
+          despesa_rateada: number | null
+          lb: number | null
+          lb_pct: number | null
+        }
+        Relationships: []
+      }
+      vw_gerencial_professional_trimestral_total: {
+        Row: {
+          distribuidora_id: string | null
+          ano: number | null
+          trimestre: number | null
+          meses_com_carga: number | null
+          meses_com_despesa: number | null
+          faturamento_liquido: number | null
+          rentabilidade: number | null
+          rentabilidade_pct: number | null
+          despesa: number | null
+          lb: number | null
+          lb_pct: number | null
+          custo_op_pct: number | null
+        }
+        Relationships: []
+      }
       vw_professional_mensal: {
         Row: {
           distribuidora_id: string | null

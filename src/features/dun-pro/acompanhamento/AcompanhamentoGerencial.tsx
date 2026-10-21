@@ -38,21 +38,24 @@ export function AcompanhamentoGerencial({
   periodo,
   rotuloPeriodo,
   totaisMensais,
+  professional = false,
 }: {
   distribuidoraId: string | undefined
   periodo: PeriodoAcompanhamento | undefined
   /** ex.: "2026" ou "3º TRI/26" */
   rotuloPeriodo: string
   totaisMensais: TotalMensal[]
+  /** Só Professional: views vw_gerencial_professional_* (totaisMensais já vêm dessa visão) */
+  professional?: boolean
 }) {
   const { podeEditar } = usePerfil()
   const ano = periodo?.ano
   const tri = periodo?.tipo === 'trimestre' ? periodo.tri : undefined
   // acumulado: view anual ou trimestral (só a do período escolhido fica ligada)
-  const anual = useGerencialAnual(distribuidoraId, periodo?.tipo === 'ano' ? ano : undefined)
-  const trimestral = useGerencialTrimestral(distribuidoraId, tri ? ano : undefined, tri)
+  const anual = useGerencialAnual(distribuidoraId, periodo?.tipo === 'ano' ? ano : undefined, professional)
+  const trimestral = useGerencialTrimestral(distribuidoraId, tri ? ano : undefined, tri, professional)
   const acumulado = periodo?.tipo === 'trimestre' ? trimestral : anual
-  const mensais = useGerencialMensalAno(distribuidoraId, ano)
+  const mensais = useGerencialMensalAno(distribuidoraId, ano, professional)
 
   const mesesDoPeriodo = useMemo(() => calcularMesesDoPeriodo(ano, tri), [ano, tri])
   const totaisDoPeriodo = useMemo(

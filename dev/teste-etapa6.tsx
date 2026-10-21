@@ -19,8 +19,8 @@ const D = 'dist-demo'
 const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
 qc.setQueryData(['perfil', 'u1'], { papel: 'admin', nome: 'Nic' })
 qc.setQueryData(['distribuidora', 'dun-professional'], { id: D, nome: 'DUN PROFESSIONAL' })
-qc.setQueryData(['vw_gerencial_mensal_total', D], dados.totais)
-qc.setQueryData(['vw_gerencial_anual', D, 2026], { linhas: dados.anual, total: dados.anualTotal })
+qc.setQueryData(['vw_gerencial_mensal_total', D, false], dados.totais)
+qc.setQueryData(['vw_gerencial_anual', D, 2026, false], { linhas: dados.anual, total: dados.anualTotal })
 qc.setQueryData(['departamentos', 'exclusivos', D], dados.professional.exclusivos)
 qc.setQueryData(['vw_professional', D, { visao: 'mensal', mesRef: '2026-08-01' }], {
   linhas: dados.professional.linhasAgo,

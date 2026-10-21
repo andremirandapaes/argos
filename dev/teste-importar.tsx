@@ -38,7 +38,7 @@ const vigenteDemo = params.get('vigente')
 if (vigenteDemo) {
   const igual = vigenteDemo === 'igual'
   queryClient.setQueryData(['distribuidora', 'dun-professional'], { id: 'dist-demo', nome: 'DUN PROFESSIONAL' })
-  queryClient.setQueryData(['vw_gerencial_mensal_total', 'dist-demo'], [])
+  queryClient.setQueryData(['vw_gerencial_mensal_total', 'dist-demo', false], [])
   queryClient.setQueryData(
     ['cargas_faturamento', 'mes', 'dist-demo', '2026-08-01'],
     [

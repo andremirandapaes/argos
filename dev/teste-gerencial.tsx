@@ -1,6 +1,6 @@
 // Vitrine de desenvolvimento do Relatório Gerencial com os dados do seed (views geradas no PGlite
 // e salvas em dev/dados-demo-2026.json). Sem login nem banco.
-// Abrir em http://localhost:5173/dev/teste-gerencial.html?aba=acompanhamento  (?tema=escuro)
+// Abrir em http://localhost:5173/dev/teste-gerencial.html?aba=acompanhamento  (?tema=escuro · ?prof=1 = Só Professional)
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -10,6 +10,7 @@ import { SessaoContext } from '@/auth/sessao-context'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import GerencialPage from '@/features/dun-pro/GerencialPage'
 import dados from './dados-demo-2026.json'
+import prof from './dados-demo-gerencial-professional-2026.json'
 
 const params = new URLSearchParams(location.search)
 if (params.get('tema') === 'escuro') document.documentElement.classList.add('dark')
@@ -30,23 +31,32 @@ const mensalPadrao = (mes: string) =>
 
 qc.setQueryData(['perfil', 'u1'], { papel: 'admin', nome: 'Nic' })
 qc.setQueryData(['distribuidora', 'dun-professional'], { id: D, nome: 'DUN PROFESSIONAL' })
-qc.setQueryData(['vw_gerencial_mensal_total', D], dados.totais)
-qc.setQueryData(['vw_gerencial_anual', D, 2026], { linhas: dados.anual, total: dados.anualTotal })
-qc.setQueryData(['vw_gerencial_mensal', 'ano', D, 2026], dados.mensal)
+// chaves: o último item é o modo Só Professional (false = todos os departamentos)
+qc.setQueryData(['vw_gerencial_mensal_total', D, false], dados.totais)
+qc.setQueryData(['vw_gerencial_anual', D, 2026, false], { linhas: dados.anual, total: dados.anualTotal })
+qc.setQueryData(['vw_gerencial_mensal', 'ano', D, 2026, false], dados.mensal)
 for (const t of [1, 2, 3]) {
-  qc.setQueryData(['vw_gerencial_trimestral', D, 2026, t], (dados.trimestral as Record<string, unknown>)[t])
+  qc.setQueryData(['vw_gerencial_trimestral', D, 2026, t, false], (dados.trimestral as Record<string, unknown>)[t])
 }
-qc.setQueryData(['vw_gerencial_mensal', D, '2026-08-01'], mensalPadrao('2026-08-01'))
+qc.setQueryData(['vw_gerencial_mensal', D, '2026-08-01', false], mensalPadrao('2026-08-01'))
+// Só Professional (views vw_gerencial_professional_*, geradas no PGlite)
+qc.setQueryData(['vw_gerencial_mensal_total', D, true], prof.totais)
+qc.setQueryData(['vw_gerencial_anual', D, 2026, true], { linhas: prof.anual, total: prof.anualTotal })
+qc.setQueryData(['vw_gerencial_mensal', 'ano', D, 2026, true], prof.mensal)
+for (const t of [1, 2, 3]) {
+  qc.setQueryData(['vw_gerencial_trimestral', D, 2026, t, true], (prof.trimestral as Record<string, unknown>)[t])
+}
+qc.setQueryData(['vw_gerencial_mensal', D, '2026-08-01', true], prof.mensalAgo)
 
 const sessao = { user: { id: 'u1', email: 'nic@demo' } } as unknown as Session
 const aba = params.get('aba')
-const extra = ['periodo', 'tri', 'ano'].filter((k) => params.get(k)).map((k) => `&${k}=${params.get(k)}`).join('')
+const extra = ['periodo', 'tri', 'ano', 'prof', 'visao'].filter((k) => params.get(k)).map((k) => `&${k}=${params.get(k)}`).join('')
 
 createRoot(document.getElementById('root')!).render(
   <QueryClientProvider client={qc}>
     <SessaoContext.Provider value={{ sessao, carregando: false }}>
       <TooltipProvider>
-        <MemoryRouter initialEntries={[aba ? `/?aba=${aba}${extra}` : '/']}>
+        <MemoryRouter initialEntries={[`/?aba=${aba ?? 'padrao'}${extra}`]}>
           <div className="flex min-h-svh flex-col bg-background">
             <GerencialPage />
           </div>

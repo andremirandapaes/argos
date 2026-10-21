@@ -50,7 +50,7 @@ const jul = carga('c3', '2026-07-01', 1, true, { total_faturamento: 2463876.0, t
 
 qc.setQueryData(['perfil', 'u1'], { papel: 'admin', nome: 'Nic' })
 qc.setQueryData(['distribuidora', 'dun-professional'], { id: D, nome: 'DUN PROFESSIONAL' })
-qc.setQueryData(['vw_gerencial_mensal_total', D], [{ mes_ref: '2026-07-01' }, { mes_ref: '2026-08-01' }])
+qc.setQueryData(['vw_gerencial_mensal_total', D, false], [{ mes_ref: '2026-07-01' }, { mes_ref: '2026-08-01' }])
 qc.setQueryData(['cargas_faturamento', 'ano', D, 2026], [v2, v1, jul])
 qc.setQueryData(['perfis', 'nomes'], new Map([['u1', 'Nic']]))
 qc.setQueryData(['cargas_faturamento', 'id', 'c1'], v1)
