@@ -235,12 +235,21 @@ export function EditorTerceirizados({
             <Tabs value={uf} onValueChange={(v) => setUf(v as UF)}>
               <TabsList className="grid h-11 w-full grid-cols-2">
                 {UFS.map((u) => (
-                  <TabsTrigger key={u} value={u} className="gap-2 text-sm">
+                  <TabsTrigger
+                    key={u}
+                    value={u}
+                    className={cn(
+                      'gap-2 text-sm hover:bg-background/60',
+                      // aba ativa em destaque: fundo da marca (vence o fundo padrão da aba, também no escuro)
+                      'data-active:bg-primary data-active:font-semibold data-active:text-primary-foreground data-active:shadow-md data-active:hover:bg-primary',
+                      'dark:data-active:border-transparent dark:data-active:bg-primary dark:data-active:text-primary-foreground',
+                    )}
+                  >
                     {ROTULO_UF[u]}
                     <span
                       className={cn(
                         'rounded-full px-1.5 py-px text-[11px] font-semibold tabular-nums',
-                        u === uf ? 'bg-primary/12 text-primary' : 'bg-muted-foreground/12 text-muted-foreground',
+                        u === uf ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted-foreground/12 text-muted-foreground',
                       )}
                     >
                       {fmtPessoas(totalUf(u))}
