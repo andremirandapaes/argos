@@ -370,3 +370,26 @@ h1 {
 .ag-row.hc-linha-total .ag-cell.hc-mes-ref {
   background-color: color-mix(in oklch, var(--primary) 10%, transparent);
 }
+
+/* Login: brilhos do painel da marca se movendo devagar (desligado para quem prefere menos movimento) */
+@keyframes login-aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, 8%, 0) scale(1.08);
+  }
+}
+.login-aurora {
+  animation: login-aurora 18s ease-in-out infinite;
+}
+.login-aurora-2 {
+  animation-duration: 24s;
+  animation-direction: reverse;
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-aurora {
+    animation: none;
+  }
+}
