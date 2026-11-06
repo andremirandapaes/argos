@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Spinner } from '@/components/ui/spinner'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useMesesTerceirizados } from '../api'
 import { AREAS, ROTULO_UF, UFS, intervaloMeses, rotuloMes, type Area, type Linha, type UF } from '../regras'
 import { Escolha, fmtPessoas } from '../componentes'
@@ -139,16 +140,18 @@ export function EditorTerceirizados({
         (a.centro ?? '').localeCompare(b.centro ?? '') ||
         a.uf.localeCompare(b.uf),
     )
-    return AREAS.map((a) => ({ area: a, itens: ordenados.filter((i) => i.area === a) })).filter((g) => g.itens.length)
-  }, [itens])
+    return AREAS.map((a) => ({ area: a, itens: ordenados.filter((i) => i.uf === uf && i.area === a) }))
+  }, [itens, uf])
 
   const somar = (f: (i: Item) => boolean) => itens.filter(f).reduce((s, i) => s + i.q, 0)
   const total = somar(() => true)
+  const totalUf = (u: UF) => somar((i) => i.uf === u)
+  // resumo da filial da aba
   const resumo = [
-    { rotulo: 'Depósito', valor: somar((i) => i.area === 'Logística' && i.dept === 'Depósito'), destaque: true },
-    { rotulo: 'Distribuição', valor: somar((i) => i.area === 'Logística' && i.dept === 'Distribuição') },
-    { rotulo: 'Comercial', valor: somar((i) => i.area === 'Comercial') },
-    { rotulo: 'Backoffice', valor: somar((i) => i.area === 'Backoffice') },
+    { rotulo: 'Comercial', valor: somar((i) => i.uf === uf && i.area === 'Comercial') },
+    { rotulo: 'Depósito', valor: somar((i) => i.uf === uf && i.area === 'Logística' && i.dept === 'Depósito'), destaque: true },
+    { rotulo: 'Distribuição', valor: somar((i) => i.uf === uf && i.area === 'Logística' && i.dept === 'Distribuição') },
+    { rotulo: 'Backoffice', valor: somar((i) => i.uf === uf && i.area === 'Backoffice') },
   ]
 
   const qtdValida = qtd.trim() !== '' && Number.isInteger(Number(qtd)) && Number(qtd) > 0
@@ -227,8 +230,29 @@ export function EditorTerceirizados({
             </div>
           </SheetHeader>
 
+          {/* uma aba por filial: o resumo, o formulário e a lista seguem a filial escolhida */}
+          <div className="border-b px-5 pt-4 pb-3">
+            <Tabs value={uf} onValueChange={(v) => setUf(v as UF)}>
+              <TabsList className="grid h-11 w-full grid-cols-2">
+                {UFS.map((u) => (
+                  <TabsTrigger key={u} value={u} className="gap-2 text-sm">
+                    {ROTULO_UF[u]}
+                    <span
+                      className={cn(
+                        'rounded-full px-1.5 py-px text-[11px] font-semibold tabular-nums',
+                        u === uf ? 'bg-primary/12 text-primary' : 'bg-muted-foreground/12 text-muted-foreground',
+                      )}
+                    >
+                      {fmtPessoas(totalUf(u))}
+                    </span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-5">
-            {/* resumo do mês */}
+            {/* resumo da filial */}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {resumo.map((r) => (
                 <div
@@ -243,11 +267,10 @@ export function EditorTerceirizados({
 
             {/* adicionar: filial → área → centro de custo → quantidade */}
             <section className="flex flex-col gap-3 rounded-xl border bg-card p-4" aria-label="Adicionar terceirizados">
-              <h3 className="text-sm font-semibold">Adicionar</h3>
+              <h3 className="text-sm font-semibold">
+                Adicionar em <span className="text-primary">{ROTULO_UF[uf]}</span>
+              </h3>
               <div className="flex flex-wrap items-end gap-3">
-                <Campo rotulo="Filial">
-                  <Escolha rotulo="Filial" valor={uf} onMudar={setUf} opcoes={UFS.map((u) => ({ value: u, label: u }))} />
-                </Campo>
                 <Campo rotulo="Área">
                   <Escolha
                     rotulo="Área"
@@ -324,57 +347,58 @@ export function EditorTerceirizados({
 
             {/* lista do mês */}
             <section className="flex flex-col gap-4" aria-label={`Terceirizados de ${rotuloMes(competencia)}`}>
-              {grupos.length === 0 && (
+              {grupos.every((g) => g.itens.length === 0) ? (
                 <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  Nenhum terceirizado em {rotuloMes(competencia)}. Adicione acima, ou salve assim para registrar que não havia.
+                  Nenhum terceirizado em {ROTULO_UF[uf]} em {rotuloMes(competencia)}. Adicione acima, ou salve assim para registrar que
+                  não havia.
                 </p>
-              )}
-              {grupos.map((g) => (
+              ) : grupos.map((g) => (
                 <div key={g.area} className="flex flex-col gap-1.5">
                   <div className="flex items-baseline justify-between px-1">
                     <h4 className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">{g.area}</h4>
                     <span className="text-xs text-muted-foreground tabular-nums">{fmtPessoas(g.itens.reduce((s, i) => s + i.q, 0))}</span>
                   </div>
-                  <ul className="flex flex-col divide-y rounded-lg border">
-                    {g.itens.map((i) => (
-                      <li
-                        key={i.id}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-2',
-                          i.area === 'Logística' && i.dept === 'Depósito' && 'bg-hc-terc/6',
-                          i.q === 0 && 'opacity-50',
-                        )}
-                      >
-                        <Badge variant="outline" className="w-10 justify-center font-medium" title={ROTULO_UF[i.uf]}>
-                          {i.uf}
-                        </Badge>
-                        <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm">
-                          {i.area === 'Comercial' && <span className="size-2 shrink-0 rounded-full" style={{ background: corDistribuidora(i.dist) }} />}
-                          {nomeCentro(i)}
-                        </span>
-                        <div className="flex items-center">
-                          <Button variant="outline" size="icon" className="size-8 rounded-r-none" aria-label="Diminuir" onClick={() => mudarQtd(i.id, i.q - 1)}>
-                            <Minus />
+                  {g.itens.length === 0 ? (
+                    <p className="rounded-lg border border-dashed px-3 py-2.5 text-xs text-muted-foreground">Nenhum terceirizado em {g.area}.</p>
+                  ) : (
+                    <ul className="flex flex-col divide-y rounded-lg border">
+                      {g.itens.map((i) => (
+                        <li
+                          key={i.id}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-2',
+                            i.area === 'Logística' && i.dept === 'Depósito' && 'bg-hc-terc/6',
+                            i.q === 0 && 'opacity-50',
+                          )}
+                        >
+                          <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm">
+                            {i.area === 'Comercial' && <span className="size-2 shrink-0 rounded-full" style={{ background: corDistribuidora(i.dist) }} />}
+                            {nomeCentro(i)}
+                          </span>
+                          <div className="flex items-center">
+                            <Button variant="outline" size="icon" className="size-8 rounded-r-none" aria-label="Diminuir" onClick={() => mudarQtd(i.id, i.q - 1)}>
+                              <Minus />
+                            </Button>
+                            <Input
+                              aria-label={`Quantidade ${i.uf} ${nomeCentro(i)}`}
+                              inputMode="numeric"
+                              type="number"
+                              min={0}
+                              value={i.q}
+                              onChange={(e) => mudarQtd(i.id, Math.floor(Number(e.target.value) || 0))}
+                              className="h-8 w-16 rounded-none border-x-0 text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <Button variant="outline" size="icon" className="size-8 rounded-l-none" aria-label="Aumentar" onClick={() => mudarQtd(i.id, i.q + 1)}>
+                              <Plus />
+                            </Button>
+                          </div>
+                          <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" aria-label="Remover" onClick={() => remover(i.id)}>
+                            <Trash2 />
                           </Button>
-                          <Input
-                            aria-label={`Quantidade ${i.uf} ${nomeCentro(i)}`}
-                            inputMode="numeric"
-                            type="number"
-                            min={0}
-                            value={i.q}
-                            onChange={(e) => mudarQtd(i.id, Math.floor(Number(e.target.value) || 0))}
-                            className="h-8 w-16 rounded-none border-x-0 text-center tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
-                          />
-                          <Button variant="outline" size="icon" className="size-8 rounded-l-none" aria-label="Aumentar" onClick={() => mudarQtd(i.id, i.q + 1)}>
-                            <Plus />
-                          </Button>
-                        </div>
-                        <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" aria-label="Remover" onClick={() => remover(i.id)}>
-                          <Trash2 />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </section>
@@ -390,7 +414,12 @@ export function EditorTerceirizados({
           <SheetFooter className="flex-row items-center justify-between gap-3 border-t p-4">
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground">Total em {rotuloMes(competencia)}</span>
-              <span className="text-lg font-semibold tabular-nums">{fmtPessoas(total)}</span>
+              <span className="flex items-baseline gap-2">
+                <span className="text-lg font-semibold tabular-nums">{fmtPessoas(total)}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {UFS.map((u) => `${u} ${fmtPessoas(totalUf(u))}`).join(' · ')}
+                </span>
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {alterado && <span className="hidden text-xs text-alerta-foreground sm:inline">Alterações não salvas</span>}
