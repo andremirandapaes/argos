@@ -23,6 +23,15 @@ export type Linha = readonly [string, UF, Area, string | null, string | null, st
 const LIGACOES = new Set(['de', 'da', 'do', 'das', 'dos', 'e'])
 
 /** Nome de departamento padronizado: cada palavra com inicial maiúscula ("Crédito/Cobrança", "Gente & Gestão"). */
+/**
+ * Departamento/setor da linha como o painel usa: nome padronizado; terceirizados da Logística vindos
+ * das planilhas manuais não têm setor e contam no Depósito (mesma regra do editor de terceirizados).
+ */
+export function departamentoDaLinha(departamento: string | null, area: string, vinculo: string) {
+  if (departamento) return padronizarDepartamento(departamento)
+  return area === 'Logística' && vinculo === 'Terceirizado' ? 'Depósito' : null
+}
+
 export function padronizarDepartamento(nome: string) {
   return nome
     .trim()

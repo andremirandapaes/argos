@@ -10,7 +10,7 @@ import { SessaoContext } from '@/auth/sessao-context'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
 import App from '@/App'
-import { padronizarDepartamento, type Linha } from '@/features/headcount/regras'
+import { departamentoDaLinha, type Linha } from '@/features/headcount/regras'
 import base from './headcount-base-inicial.json'
 
 const params = new URLSearchParams(location.search)
@@ -27,7 +27,7 @@ const linhas: Linha[] = bases
       ? b.rows.filter((r) => r[2] !== 'Logística' || r[0] >= '2026-01')
       : b.rows.filter((r) => r[7] === 'Terceirizado' || (r[2] === 'Logística' && r[0] < '2026-01') || !cobertas.has(`${r[0]}|${r[1]}`)),
   )
-  .map((r) => [r[0], r[1], r[2], r[3], r[4], r[5] ? padronizarDepartamento(r[5]) : null, r[6], r[7], r[8]] as Linha)
+  .map((r) => [r[0], r[1], r[2], r[3], r[4], departamentoDaLinha(r[5], r[2], r[7]), r[6], r[7], r[8]] as Linha)
 
 const qc = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
 qc.setQueryData(['perfil', 'u1'], { papel: 'admin', nome: 'Nic' })

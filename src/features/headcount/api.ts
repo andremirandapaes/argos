@@ -3,7 +3,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { padronizarDepartamento, type Area, type Linha, type UF, type Vinculo } from './regras'
+import { departamentoDaLinha, type Area, type Linha, type UF, type Vinculo } from './regras'
 
 const TAMANHO_PAGINA = 1000 // limite padrão de linhas por resposta do Supabase
 
@@ -31,7 +31,7 @@ export function useLinhasHeadcount() {
             r.area as Area,
             r.distribuidora,
             r.centro,
-            r.departamento ? padronizarDepartamento(r.departamento) : null,
+            departamentoDaLinha(r.departamento, r.area!, r.vinculo!),
             r.cargo,
             r.vinculo as Vinculo,
             r.quantidade!,
