@@ -117,8 +117,8 @@ export function SobreOsDados({
                 <ul className="space-y-1 text-muted-foreground">
                   {semVinculo.map((s) => (
                     <li key={s.seg}>
-                      <span className="text-foreground">{s.seg}:</span> {s.faixa} (só o total da área). Entra no filtro "Ambos", mas não
-                      em CLT nem em Terceirizado.
+                      <span className="text-foreground">{s.seg}:</span> {s.faixa} (só o total da área, da folha). Entra sem filtro e no filtro CLT;
+                      no filtro Terceirizado esses meses ficam sem dado.
                     </li>
                   ))}
                 </ul>

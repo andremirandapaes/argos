@@ -130,7 +130,8 @@ export function VisaoGeral({ linhas, comps }: { linhas: readonly Linha[]; comps:
           [
             g,
             {
-              CLT: vinculo === 'Terceirizado' ? 0 : v.CLT,
+              // no filtro CLT, o total sem vínculo (folha da planilha do Depósito) conta como CLT (ver atendeVinculo)
+              CLT: vinculo === 'Terceirizado' ? 0 : vinculo === 'CLT' ? v.CLT + v['Não informado'] : v.CLT,
               Terceirizado: vinculo === 'CLT' ? 0 : v.Terceirizado,
               'Não informado': vinculo === 'Ambos' ? v['Não informado'] : 0,
             },

@@ -149,7 +149,12 @@ export function filtrar(linhas: readonly Linha[], f: Filtros) {
   return linhas.filter((l) => ok(f.ufs, l[1]) && ok(f.areas, l[2]) && ok(f.dists, l[3]) && ok(f.centros, l[4]) && ok(f.cargos, l[6]))
 }
 
-export const atendeVinculo = (l: Linha, v: FiltroVinculo) => v === 'Ambos' || l[7] === v
+/**
+ * Linha entra no filtro de vínculo? "Não informado" (planilha do Depósito até Ago/25: a folha, sem separar
+ * terceirizados) entra no CLT (decisão do usuário, 2026-11-24); no Terceirizado o mês fica sem dado.
+ */
+export const atendeVinculo = (l: Linha, v: FiltroVinculo) =>
+  v === 'Ambos' || l[7] === v || (v === 'CLT' && l[7] === 'Não informado')
 
 // Segmento = cada base que precisa estar presente no mês: área + UF (+ distribuidora no Comercial).
 const segmentoDe = (l: Linha) => (l[2] === 'Comercial' ? `${l[2]}|${l[1]}|${l[3]}` : `${l[2]}|${l[1]}`)
@@ -165,8 +170,8 @@ export type Cobertura = {
 
 /**
  * Cobertura das bases por mês. Um segmento está "fora" antes do primeiro e depois do último mês
- * em que aparece; entre eles, mês sem linha é "sem dado". Com vínculo filtrado, mês que só tem o
- * total sem separação CLT/terceirizado é "sem vínculo".
+ * em que aparece; entre eles, mês sem linha é "sem dado". Com o filtro Terceirizado, mês que só tem o
+ * total sem separação CLT/terceirizado é "sem vínculo" (no filtro CLT esse total entra; ver atendeVinculo).
  */
 export function cobertura(linhas: readonly Linha[], vinculo: FiltroVinculo, ultimo?: string): Cobertura {
   const meses = new Map<string, Set<string>>()
@@ -187,7 +192,7 @@ export function cobertura(linhas: readonly Linha[], vinculo: FiltroVinculo, ulti
     !meses.has(s) || c < primeiro.get(s)! || c > ultimoDe.get(s)!
       ? 'fora'
       : meses.get(s)!.has(c)
-        ? vinculo !== 'Ambos' && naoInformado.get(s)?.has(c)
+        ? vinculo === 'Terceirizado' && naoInformado.get(s)?.has(c)
           ? 'sem vínculo'
           : 'ok'
         : 'sem dado'
