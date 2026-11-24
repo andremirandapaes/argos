@@ -5,8 +5,8 @@
 //   - pessoas sem cabeçalho de centro próprio (ex.: Merchandising logo depois de Vendas) são separadas
 //     pelo subtotal: as N últimas pessoas antes do subtotal "X = N" pertencem ao centro X;
 //   - ficam fora: Diretoria, Dunorte Professional, Abastex (é o Contact Center), Núcleo de Inteligência Comercial e Unidades;
-//   - Logística (Depósito/Distribuição): até Dez/25 vale a planilha do Depósito (auditada) e a do sistema é
-//     ignorada; de Jan/26 em diante vem do sistema, com o tratamento do usuário: as pessoas da lista
+//   - Logística (Depósito/Distribuição): até Ago/25 vale a planilha do Depósito (auditada) e a do sistema é
+//     ignorada; de Set/25 em diante vem do sistema (AM e RR), com o tratamento do usuário: as pessoas da lista
 //     TRANSFERIR_PARA_DISTRIBUICAO saem do Depósito e vão para a Distribuição (quem já está no centro
 //     Distribuição continua lá; nome da lista que não aparecer no mês é ignorado);
 //   - a coluna Salário é ignorada (só o cargo é lido; nenhum valor de salário é lido nem gravado).
@@ -65,8 +65,12 @@ const CARGOS: Record<string, string> = {
   'DEPT. PESSOAL': 'DEPARTAMENTO PESSOAL',
   'DEPTO. PESSOAL': 'DEPARTAMENTO PESSOAL',
 }
-/** Primeiro mês em que a Logística vem do sistema (antes disso, da planilha do Depósito). Regra de 2026-10-07: Jan/26. */
-export const LOGISTICA_DO_SISTEMA_DESDE = '2026-01'
+/**
+ * Primeiro mês em que a Logística vem do sistema (antes disso, da planilha do Depósito).
+ * Regra de 2026-10-07: Jan/26; antecipada em 2026-11-24 para Set/25 (AM e RR): a planilha do Depósito vai até Ago/25.
+ * A view vw_headcount_linhas usa a mesma data (migration 20261124000000_headcount_logistica_set25.sql).
+ */
+export const LOGISTICA_DO_SISTEMA_DESDE = '2025-09'
 
 /** Pessoas lotadas no Depósito que na verdade são da Distribuição (tratamento do usuário, 2026-10-07). */
 const TRANSFERIR_PARA_DISTRIBUICAO = new Set(
@@ -288,7 +292,7 @@ export function lerExportacaoSistema(abas: AbaPlanilha[], arquivo: string, opcoe
       pessoasPorCentro.set(centro, (pessoasPorCentro.get(centro) || 0) + pessoas.length)
       const cl = classificarCentro(centro)
       if (cl.ignorar || (cl.area === 'Logística' && !logisticaDoSistema)) {
-        const motivo = cl.ignorar ? cl.motivo : 'Logística (até Dez/25 vem da planilha do Depósito)'
+        const motivo = cl.ignorar ? cl.motivo : 'Logística (até Ago/25 vem da planilha do Depósito)'
         foraDoPainel.set(motivo, (foraDoPainel.get(motivo) || 0) + pessoas.length)
         return
       }

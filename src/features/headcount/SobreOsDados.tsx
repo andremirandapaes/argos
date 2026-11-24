@@ -19,13 +19,13 @@ export const nomeFonte = (f: Pick<FonteHeadcount, 'fonte' | 'tipo' | 'competenci
 const REGRAS = [
   'Headcount = colaboradores ativos no último dia do mês.',
   'Meses com exportação do sistema usam o sistema como fonte do Comercial e do Backoffice: área, distribuidora e centro (Vendas ou Merchan) vêm do centro de custo. Ficam fora: Diretoria, Dunorte Professional, Abastex (Contact Center), Núcleo de Inteligência Comercial e Unidades. Adm. Compras e Trade Marketing entram no Backoffice.',
-  'Logística até Dez/25: planilha do Depósito, que passa por auditoria. De Jan/26 em diante: exportação do sistema (Depósito e Distribuição), com o tratamento que reproduz a planilha auditada (pessoas lotadas no Depósito que são da Distribuição são contadas na Distribuição). Enquanto um mês não tiver a exportação enviada, vale a planilha do Depósito.',
+  'Logística até Ago/25: planilha do Depósito, que passa por auditoria. De Set/25 em diante: exportação do sistema (Depósito e Distribuição), com o tratamento que reproduz a planilha auditada (pessoas lotadas no Depósito que são da Distribuição são contadas na Distribuição). Enquanto um mês não tiver a exportação enviada, vale a planilha do Depósito.',
   'Terceirizados (INOVAR) não vêm do sistema: são lançados no ARGOS por estado, departamento e quantidade. Nos meses sem lançamento, valem os das planilhas manuais.',
   'Backoffice RR só existe nos meses com exportação do sistema.',
   'Empresa segue o estado: AM é a Dunorte (matriz) e RR é a Super Giro (filial).',
   'Comercial: vale só o que está dentro do quadro de cada equipe, até a linha TOTAL. Tudo é CLT, exceto linhas identificadas como terceirizado/INOVAR.',
   'Mix Norte passou a ter funcionários próprios em Ago/26; antes disso não existia.',
-  'Logística: cargos detalhados de Jan/26 em diante (CLT). Terceirizados entram como total, sem cargo, separados por setor quando lançados no ARGOS.',
+  'Logística: cargos detalhados de Set/25 em diante (CLT). Terceirizados entram como total, sem cargo, separados por setor quando lançados no ARGOS.',
   'Backoffice: total por departamento, tratado como CLT.',
   'Sem detalhamento por cargo, a tabela mostra só o total. Nunca se preenche com zero nem se estima a distribuição.',
 ]
